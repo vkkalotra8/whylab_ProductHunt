@@ -1,0 +1,303 @@
+{
+  "schemaVersion": 2,
+  "id": "investigation_d6f8ded6-26b8-4abd-a690-c5ad698be905",
+  "objective": "Stage progression test",
+  "status": "completed",
+  "stopReason": null,
+  "createdAt": "2026-10-08T11:16:54.581Z",
+  "updatedAt": "2026-10-08T11:16:54.596Z",
+  "sources": [
+    {
+      "id": "source_58633a8d-1dde-4783-9718-a258c2ad7027",
+      "kind": "uploaded_file",
+      "name": "eval.csv",
+      "capturedAt": "2026-10-08T11:16:54.581Z",
+      "contentDigest": null
+    }
+  ],
+  "datasets": [
+    {
+      "id": "dataset_1b59c782-2e3f-42aa-9c35-78e4973e7b31",
+      "sourceId": "source_58633a8d-1dde-4783-9718-a258c2ad7027",
+      "name": "eval.csv",
+      "rowCount": 100,
+      "columns": [
+        "y_true",
+        "y_pred",
+        "y_probability"
+      ],
+      "role": "evaluation",
+      "task": "binary_classification",
+      "targetColumn": "y_true",
+      "predictionColumn": "y_pred",
+      "probabilityColumn": "y_probability",
+      "positiveLabel": "1"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "evidence_39acf174-3af5-4097-a5a2-8af2a732479a",
+      "kind": "measurement",
+      "description": "Baseline classification metrics",
+      "measurements": [
+        {
+          "name": "accuracy",
+          "status": "measured",
+          "value": 0.9,
+          "unit": "ratio",
+          "sampleSize": 100
+        },
+        {
+          "name": "recall",
+          "status": "measured",
+          "value": 0.8,
+          "unit": "ratio",
+          "sampleSize": 100
+        }
+      ],
+      "provenance": {
+        "kind": "tool_result",
+        "resultId": "result_c3d80e27-8549-4a28-9701-af5a94583efb"
+      }
+    }
+  ],
+  "toolCalls": [
+    {
+      "id": "call_63b13309-259a-4796-b1da-aacd0b0d1eb2",
+      "investigationId": "investigation_d6f8ded6-26b8-4abd-a690-c5ad698be905",
+      "tool": "compute_classification_metrics",
+      "toolVersion": 1,
+      "requestedAt": "2026-10-08T11:16:54.581Z",
+      "input": {
+        "datasetId": "dataset_1b59c782-2e3f-42aa-9c35-78e4973e7b31",
+        "positiveLabel": "1"
+      }
+    }
+  ],
+  "toolResults": [
+    {
+      "id": "result_c3d80e27-8549-4a28-9701-af5a94583efb",
+      "callId": "call_63b13309-259a-4796-b1da-aacd0b0d1eb2",
+      "tool": "compute_classification_metrics",
+      "toolVersion": 1,
+      "completedAt": "2026-10-08T11:16:54.581Z",
+      "datasetIds": [
+        "dataset_1b59c782-2e3f-42aa-9c35-78e4973e7b31"
+      ],
+      "evidenceIds": [
+        "evidence_39acf174-3af5-4097-a5a2-8af2a732479a"
+      ],
+      "status": "completed",
+      "output": {
+        "positiveLabel": "1",
+        "negativeLabel": "0",
+        "sampleSize": 100,
+        "confusion": {
+          "truePositive": 20,
+          "falsePositive": 5,
+          "trueNegative": 70,
+          "falseNegative": 5
+        },
+        "metrics": []
+      },
+      "limitations": []
+    }
+  ],
+  "hypotheses": [
+    {
+      "id": "hypothesis_1c5fd8c0-2f47-4633-91ab-2ce9969824eb",
+      "statement": "Accuracy paradox hides minority detection failure",
+      "status": "proposed",
+      "confidence": {
+        "kind": "evidence_strength",
+        "level": "limited",
+        "rationale": "Large raw accuracy disparity"
+      },
+      "evidence": [
+        {
+          "evidenceId": "evidence_39acf174-3af5-4097-a5a2-8af2a732479a",
+          "relationship": "supports",
+          "rationale": "Observed disparity"
+        }
+      ],
+      "unresolvedQuestions": []
+    }
+  ],
+  "experiments": [
+    {
+      "id": "experiment_b58c89f9-e9a1-4e23-a811-69e3b7520c50",
+      "hypothesisId": "hypothesis_1c5fd8c0-2f47-4633-91ab-2ce9969824eb",
+      "prediction": "Reweighted balanced evaluation will reveal accuracy gap",
+      "method": "accuracy_paradox_v1",
+      "seed": null,
+      "callIds": [
+        "call_63b13309-259a-4796-b1da-aacd0b0d1eb2"
+      ],
+      "criterion": {
+        "metric": "accuracy_paradox_gap",
+        "operator": "at_least",
+        "value": 10,
+        "unit": "percentage_points"
+      },
+      "status": "completed",
+      "outcome": "supports",
+      "evidenceIds": [
+        "evidence_39acf174-3af5-4097-a5a2-8af2a732479a"
+      ],
+      "limitations": []
+    }
+  ],
+  "repairs": [
+    {
+      "id": "repair_d87570b6-f64d-4c59-9277-db0a54b61b87",
+      "hypothesisId": "hypothesis_1c5fd8c0-2f47-4633-91ab-2ce9969824eb",
+      "rationale": "Adjust threshold from 0.50 to 0.25 to recover minority class recall.",
+      "evidenceIds": [
+        "evidence_39acf174-3af5-4097-a5a2-8af2a732479a"
+      ],
+      "kind": "operating_policy",
+      "verification": "evaluation_data",
+      "datasetId": "dataset_1b59c782-2e3f-42aa-9c35-78e4973e7b31",
+      "policy": {
+        "threshold": 0.25,
+        "positiveLabel": "1",
+        "comparison": "greater_than_or_equal",
+        "costs": null
+      },
+      "criterion": {
+        "metric": "recall",
+        "operator": "at_least",
+        "value": 0.8,
+        "unit": "ratio"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "id": "comparison_d55cdacd-e086-4d5a-bbf1-e674b16e8bb5",
+      "repairId": "repair_d87570b6-f64d-4c59-9277-db0a54b61b87",
+      "datasetId": "dataset_1b59c782-2e3f-42aa-9c35-78e4973e7b31",
+      "baselinePolicy": {
+        "threshold": 0.5,
+        "positiveLabel": "1",
+        "comparison": "greater_than_or_equal",
+        "costs": null
+      },
+      "afterPolicy": {
+        "threshold": 0.25,
+        "positiveLabel": "1",
+        "comparison": "greater_than_or_equal",
+        "costs": null
+      },
+      "baselineEvidenceIds": [
+        "evidence_39acf174-3af5-4097-a5a2-8af2a732479a"
+      ],
+      "afterEvidenceIds": [
+        "evidence_39acf174-3af5-4097-a5a2-8af2a732479a"
+      ],
+      "criterion": {
+        "metric": "recall",
+        "operator": "at_least",
+        "value": 0.8,
+        "unit": "ratio"
+      },
+      "status": "passed",
+      "limitations": []
+    }
+  ],
+  "events": [
+    {
+      "id": "event_e70f7979-ee05-4d29-a61d-e7a383bdad06",
+      "sequence": 1,
+      "at": "2026-10-08T11:16:54.581Z",
+      "kind": "dataset_registered",
+      "entityId": "dataset_1b59c782-2e3f-42aa-9c35-78e4973e7b31",
+      "message": "Dataset 'eval.csv' (100 rows) registered from source 'eval.csv'."
+    },
+    {
+      "id": "event_01f35205-520e-4d73-82ce-d1c389ae729d",
+      "sequence": 2,
+      "at": "2026-10-08T11:16:54.581Z",
+      "kind": "tool_requested",
+      "entityId": "call_63b13309-259a-4796-b1da-aacd0b0d1eb2",
+      "message": "Diagnostic tool 'compute_classification_metrics' requested."
+    },
+    {
+      "id": "event_26b77bae-84fb-482c-81c4-94dd500d446a",
+      "sequence": 3,
+      "at": "2026-10-08T11:16:54.592Z",
+      "kind": "tool_completed",
+      "entityId": "result_c3d80e27-8549-4a28-9701-af5a94583efb",
+      "message": "Diagnostic tool 'compute_classification_metrics' completed with 1 evidence observation(s)."
+    },
+    {
+      "id": "event_f3df28c4-ed91-4174-87eb-665b6f25dc99",
+      "sequence": 4,
+      "at": "2026-10-08T11:16:54.595Z",
+      "kind": "hypothesis_updated",
+      "entityId": "hypothesis_1c5fd8c0-2f47-4633-91ab-2ce9969824eb",
+      "message": "Hypothesis 'Accuracy paradox hides minority detection failure' marked as proposed."
+    },
+    {
+      "id": "event_8447b362-6598-47bd-bc5c-2f8ca7b4d851",
+      "sequence": 5,
+      "at": "2026-10-08T11:16:54.596Z",
+      "kind": "experiment_completed",
+      "entityId": "experiment_b58c89f9-e9a1-4e23-a811-69e3b7520c50",
+      "message": "Verification experiment completed with outcome: supports."
+    },
+    {
+      "id": "event_b448dbba-f98b-48da-b1be-fb24d5b306b1",
+      "sequence": 6,
+      "at": "2026-10-08T11:16:54.596Z",
+      "kind": "repair_proposed",
+      "entityId": "repair_d87570b6-f64d-4c59-9277-db0a54b61b87",
+      "message": "Repair candidate proposed: threshold 0.25 (operating_policy)."
+    },
+    {
+      "id": "event_d5287923-876a-45e9-b7f3-c5613ef108e9",
+      "sequence": 7,
+      "at": "2026-10-08T11:16:54.596Z",
+      "kind": "comparison_completed",
+      "entityId": "comparison_d55cdacd-e086-4d5a-bbf1-e674b16e8bb5",
+      "message": "Before-vs-after re-evaluation completed with status: passed."
+    },
+    {
+      "id": "event_a22f9e37-9ec1-4fdf-bbf0-e3a9ec49702d",
+      "sequence": 8,
+      "at": "2026-10-08T11:16:54.596Z",
+      "kind": "investigation_completed",
+      "entityId": "investigation_d6f8ded6-26b8-4abd-a690-c5ad698be905",
+      "message": "Investigation completed with diagnosis: Accuracy paradox confirmed by stratified counterfactual experiment; resolved via cost-sensitive threshold 0.25."
+    }
+  ],
+  "diagnosis": {
+    "id": "diagnosis_a3865126-f82a-4a00-9ecb-36c4be6df85a",
+    "investigationId": "investigation_d6f8ded6-26b8-4abd-a690-c5ad698be905",
+    "status": "completed",
+    "summary": "Accuracy paradox confirmed by stratified counterfactual experiment; resolved via cost-sensitive threshold 0.25.",
+    "evidenceIds": [
+      "evidence_39acf174-3af5-4097-a5a2-8af2a732479a"
+    ],
+    "hypothesisIds": [
+      "hypothesis_1c5fd8c0-2f47-4633-91ab-2ce9969824eb"
+    ],
+    "primaryHypothesisId": "hypothesis_1c5fd8c0-2f47-4633-91ab-2ce9969824eb",
+    "confidence": {
+      "kind": "evidence_strength",
+      "level": "limited",
+      "rationale": "Verified across counterfactual test"
+    },
+    "experimentIds": [
+      "experiment_b58c89f9-e9a1-4e23-a811-69e3b7520c50"
+    ],
+    "repairIds": [
+      "repair_d87570b6-f64d-4c59-9277-db0a54b61b87"
+    ],
+    "comparisonIds": [
+      "comparison_d55cdacd-e086-4d5a-bbf1-e674b16e8bb5"
+    ],
+    "unresolvedQuestions": [],
+    "limitations": []
+  }
+}

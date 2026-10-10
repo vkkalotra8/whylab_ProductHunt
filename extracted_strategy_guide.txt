@@ -1,0 +1,741 @@
+WHYLAB
+
+GPT-6 Astra ChallengeWinning Strategy & Implementation Guide
+
+Student-facing roadmap for upgrading WhyLab before Product Hunt submission
+
+Prepared: September 12, 2026
+
+Primary goal: transform WhyLab from an interactive ML reliability dashboard with planned GPT integration into an Astra-native ML failure investigator that gathers evidence, tests hypotheses, recommends repairs, and verifies whether the repair worked.
+
+Basis: current WhyLab faculty mentorship briefing + current Product Hunt GPT-6 Astra Challenge information + OpenAI GPT-6 Astra model guidance.
+
+How to Use This Document
+
+Students should treat the P0 section as mandatory. Do not start optional features until all P0 items work end-to-end.
+
+Build one flawless flagship investigation before expanding to additional case studies.
+
+Astra must perform meaningful diagnostic planning and tool orchestration; it should not be used only to rewrite deterministic analysis into prose.
+
+Every numerical impact claim shown in the demo must be measured or clearly labelled as simulated under a stated cost model.
+
+1. Challenge Context and Strategic Fit
+
+Current challenge facts. Product Hunt lists the GPT-6 Astra Challenge for September 18, 2026. The challenge asks builders to create something ambitious with GPT-6 Astra, and lists five winners receiving a year of ChatGPT Pro, $10K in API credits, and promotion by OpenAI. Product Hunt also states that participants should schedule their launch for September 18.
+
+Why WhyLab fits. WhyLab already addresses a serious engineering problem: machine-learning systems can report strong offline metrics yet fail in deployment because of class imbalance, distribution shift, target leakage, or cost-insensitive decision thresholds. The current system already follows a strong six-stage workflow: ingest, inspect evidence, rank root causes, run counterfactual verification, repair, and produce production remedies.
+
+Why Astra fits. OpenAI describes GPT-6 Astra as its model for difficult end-to-end, multistep work, with capabilities including async tool calling, mid-turn steering, Structured Outputs, function/programmatic tool calling, multi-agent orchestration, prompt caching and persisted reasoning. These capabilities align naturally with an investigation workflow rather than a simple chat interface.
+
+Dimension
+
+Current WhyLab
+
+Assessment
+
+Problem importance
+
+ML reliability and post-deployment failure diagnosis
+
+Excellent
+
+Product originality
+
+Investigation + repair workbench
+
+Strong
+
+Visual/demo potential
+
+PR curves, confusion matrices, threshold lab
+
+Excellent
+
+Technical depth
+
+Statistical diagnostics + decision theory
+
+Excellent
+
+Clear user value
+
+Root-cause analysis and remediation
+
+Strong
+
+Astra dependency
+
+Currently described as planned / dual-engine integration
+
+Needs strengthening
+
+Real-world evidence
+
+Case studies are strong, but some impact claims need provenance
+
+Needs strengthening
+
+Product Hunt appeal
+
+Highly demonstrable and screenshot-friendly
+
+Strong
+
+Core strategic risk: if Astra merely explains results that WhyLab already computed deterministically, judges can reasonably conclude that the product works without Astra. Astra must be part of the investigation loop.
+
+2. Reposition the Product
+
+Do not lead with: "an educational platform that explains ML failures."
+
+Lead with: "WhyLab - an AI incident investigator for machine-learning systems."
+
+Recommended value proposition: Upload your evaluation data. WhyLab investigates why your model is failing, proves the root cause with experiments, and shows you how to repair it.
+
+Primary target users for the challenge submission:
+
+ML engineers
+
+Data scientists
+
+MLOps / AI platform engineers
+
+Applied AI teams and researchers
+
+Faculty and students as a secondary education use case
+
+3. Make Astra the Investigator, Not the Narrator
+
+Avoid this architecture:
+
+CSV / logs    |Deterministic Python analysis    |Final metrics    |GPT-6 Astra    |Natural-language explanation
+
+Target architecture:
+
+User input: CSV / logs / metrics / model artifacts                    |            GPT-6 Astra Investigator                    |     +--------------+--------------+     |              |              | Data Profiler  Leakage Scan   Drift Analyzer     |              |              |     +--------------+--------------+                    |            Evidence collection                    |           Hypothesis ranking                    |        Counterfactual experiments                    |              Repair planner                    |          Verification / re-test                    |       Production-ready fix report
+
+Astra should be responsible for deciding:
+
+Which evidence is missing before it can make a diagnosis.
+
+Which diagnostic tools/tests should be called next.
+
+Which root-cause hypotheses are plausible and how they should be ranked.
+
+What experiment could falsify each important hypothesis.
+
+How to interpret returned measurements without overstating confidence.
+
+Which repair should be tested and what success criterion should be used.
+
+4. P0 Feature: Autonomous Investigation
+
+Add one prominent action in the product:
+
+INVESTIGATE WITH ASTRA
+
+Typical accepted inputs:
+
+predictions.csv
+
+dataset/evaluation CSV
+
+training.log or exported training metrics
+
+optional metadata such as timestamp, environment, group, site, or device
+
+The investigation view should display progress as evidence, not hidden chain-of-thought. Example:
+
+INVESTIGATION #WH-1042[done] Dataset profile complete[done] Class prevalence analyzed[done] Metric contradiction detected[done] Leakage scan completed[done] Distribution-shift tests completed[done] Threshold sensitivity testedPrimary hypothesis: Severe class imbalanceConfidence: 94%Evidence:- Positive prevalence: 5.8%- Accuracy: 94.2%- Balanced accuracy: 51.7%- Minority recall: 22.4%Verification experiment: stratified evaluationResult: hypothesis supported
+
+Important UX rule. Show the evidence, executed tools, measurements, hypotheses and outcomes. Do not expose or simulate private chain-of-thought.
+
+5. Signature Differentiator: Evidence Graph
+
+Instead of returning a large paragraph from the model, present a graph that links observations to a verified diagnosis:
+
+94.2% accuracy     |     +-- prevalence = 5.8%     +-- malignant recall = 22.4%     |Accuracy paradox     |Hypothesis: CLASS IMBALANCE     |Experiment: balanced / stratified evaluation     |CONFIRMED     |Repair: weighted objective + threshold calibration
+
+Each evidence node should contain:
+
+metric or statistical observation
+
+source artifact / column / time slice
+
+test used
+
+result and effect size
+
+which hypothesis it supports or weakens
+
+6. Falsification Engine: WhyLab Should Try to Prove Itself Wrong
+
+This is the strongest technical differentiator. WhyLab should not stop at "I think class imbalance is the cause." It should generate a testable hypothesis and run a relevant experiment.
+
+Step
+
+Example
+
+Hypothesis
+
+Class imbalance is causing misleading top-line accuracy.
+
+Prediction
+
+Balanced metrics and minority recall will reveal substantially worse performance than raw accuracy.
+
+Experiment
+
+Run balanced metrics and controlled stratified/resampled evaluation.
+
+Observed result
+
+Measured behavior is consistent with the prediction.
+
+Decision
+
+Support, weaken, or reject the hypothesis.
+
+Next action
+
+Run repair candidate and re-evaluate with the same acceptance criteria.
+
+Recommended product message: "WhyLab does not just guess why your model failed. It runs experiments that can disprove the diagnosis."
+
+7. Use Astra Capabilities Where They Matter
+
+Astra capability
+
+WhyLab use
+
+Structured Outputs
+
+Return a validated diagnosis object: hypotheses, confidence, evidence IDs, proposed tests, repair candidates.
+
+Function / programmatic tool calling
+
+Call deterministic statistical tests, leakage scanners, drift metrics, calibration analysis and threshold optimizers.
+
+Async tool calling
+
+Run independent diagnostic tests concurrently where safe and useful.
+
+File input / file search
+
+Analyze training logs, evaluation exports, audit reports and model cards.
+
+Long context
+
+Keep large logs and prior experiment history available during an investigation.
+
+Mid-turn steering
+
+Allow users to change priorities, e.g., "optimize for patient safety" or "false positives cost $50."
+
+Multi-agent orchestration
+
+Delegate specialist diagnostic tasks internally while exposing one coherent investigator UI.
+
+Persisted reasoning/context
+
+Continue an incident investigation across follow-up tests and repairs.
+
+Implementation guidance. Do not add every capability merely to claim usage. Prioritize Structured Outputs, tool calling, async diagnostic tests, file/log analysis and counterfactual verification first.
+
+8. Optional Internal Specialist Agents
+
+                 Astra Investigator                        |       +----------------+----------------+       |                |                | Data Detective   Leakage Detective   Drift Detective       |                |                |       +----------------+----------------+                        |                Reliability Judge                        |                  Repair Engineer
+
+UX constraint. Do not show five chatbots to the user. The UI should present one investigator. Specialist agents are an implementation detail used to collect or review evidence.
+
+9. Make the Repair Lab the Demo Climax
+
+The current WhyLab repair workbench is already visually strong. Upgrade it so Astra can translate a real-world objective into an operating-point recommendation.
+
+User: "Missing a cancer case is 50x worse than sending a patient for an unnecessary test."Current threshold:       0.50Recommended threshold:   0.19Expected effect from current evaluation data:Recall                   22% -> 84%False negatives           776 -> 148False positives           +1,042Reason: the stated FN:FP cost ratio changes the preferred operating point.
+
+Recommended interaction:
+
+User states domain-specific error costs or business/clinical priorities.
+
+Astra chooses an appropriate deterministic threshold/cost optimization tool.
+
+WhyLab calculates candidate operating points.
+
+Astra explains the trade-off using measured values.
+
+User clicks Apply Astra Recommendation.
+
+Confusion matrix, cost, recall, precision and reliability indicators update live.
+
+10. High-Value Differentiator: Challenge WhyLab
+
+After the primary diagnosis, provide an adversarial review mode that tries to find a better explanation or disprove the selected cause.
+
+ADVERSARIAL REVIEWAlternative causes evaluated:Class imbalance       insufficient evidenceCovariate shift       weak evidenceOverfitting            inconsistent with logsTarget leakage         survives challengeDiagnosis confidence: 82% -> 96%
+
+This feature reinforces the reliability / AI-safety positioning because the system actively searches for alternative explanations rather than treating its first answer as final.
+
+11. Bring Your Own Model: Minimum Viable Input Path
+
+The challenge submission should not be limited to hard-coded case studies. Include a simple upload path so a visitor can inspect their own model output.
+
+Minimum columns:
+
+y_truey_predy_probability
+
+Optional columns:
+
+timestampgroupenvironmentsitedevicefeature_*
+
+Minimum automatic checks after upload:
+
+class prevalence and imbalance
+
+accuracy vs balanced accuracy
+
+precision, recall, F1 and PR-AUC where appropriate
+
+confusion matrix and threshold sweep
+
+calibration / confidence behavior
+
+basic leakage suspicion checks where features are provided
+
+slice performance where metadata is provided
+
+drift checks when reference and production samples are available
+
+12. Reliability Score: A Simple Shareable Outcome
+
+Add an interpretable top-level score only if every component is traceable to actual measurements. Avoid presenting an arbitrary model-generated score.
+
+WHYLAB RELIABILITY SCORE38 / 100   HIGH RISKPerformance quality      82Minority-class safety    31Calibration              44Drift resilience         27Leakage risk             91Cost alignment           18After repair: 38 -> 81
+
+Implementation requirement. Document the score formula and weights. Each sub-score must link back to its evidence. If the team cannot justify the aggregation before launch, show a risk profile instead of a single number.
+
+13. Export a Real Engineering Artifact
+
+Upgrade the existing Markdown export into a structured ML Incident Report:
+
+model and dataset identifiers
+
+incident severity and observed production/evaluation failure
+
+evidence summary
+
+root-cause hypotheses and confidence
+
+tests executed and returned measurements
+
+hypotheses rejected / unresolved
+
+confirmed or leading diagnosis
+
+recommended remediation
+
+threshold / cost-policy configuration
+
+before-vs-after verification results
+
+production monitoring rules
+
+CI/CD reliability checks
+
+Stretch goal: generate a GitHub issue, CI reliability policy or configuration snippet from the incident report. Do not prioritize this ahead of the core investigation loop.
+
+14. Flagship Case Study and Credibility Rules
+
+Keep all existing case studies in the product, but lead the launch video with one flagship investigation. The melanoma accuracy-paradox case is the clearest because the failure can be understood immediately.
+
+MODEL ACCURACY: 94.2%Looks excellent.WHYLAB INVESTIGATIONMalignant recall: 22.4%The model misses most malignant cases.WhyLab tests:1. Class imbalance2. Threshold misalignment3. Domain shiftRepair and re-test -> show measured before/after result
+
+Credibility rule: if dollar savings, lives affected, legal liability, ARR preserved or other impact values come from a hypothetical cost model, label them clearly as "Simulated impact under the supplied cost model." Never present simulated impact as a measured real-world outcome.
+
+15. Product Category and Launch Positioning
+
+Recommended category language:
+
+AI Reliability / ML Debugging
+
+Mental model for visitors:
+
+Sentry    -> software failuresDatadog   -> infrastructure failuresWhyLab    -> machine-learning failures
+
+Recommended launch positioning:
+
+WhyLab - Find why your ML model fails in production, prove the cause, and repair it.
+
+Recommended hero message:
+
+YOUR MODEL SAYS94.2% ACCURACYWHYLAB SAYSHIGH-RISK FAILURE DETECTEDMinority recall: 22.4%Investigate why ->
+
+16. Recommended 60-90 Second Demo Flow
+
+Time
+
+What to show
+
+Purpose
+
+0-08 sec
+
+Strong metric looks good, then reveal the critical failure.
+
+Create immediate tension.
+
+08-15 sec
+
+Upload evaluation data.
+
+Show real input, not a static demo.
+
+15-30 sec
+
+Astra investigation runs diagnostic tools.
+
+Show Astra doing work.
+
+30-43 sec
+
+Evidence Graph ranks likely causes.
+
+Make reasoning auditable through evidence.
+
+43-58 sec
+
+WhyLab runs a falsification / verification experiment.
+
+Prove the system tests its own hypothesis.
+
+58-72 sec
+
+Repair Lab changes threshold or other remediation.
+
+Show concrete action.
+
+72-82 sec
+
+Before/after metrics update.
+
+Show measured improvement.
+
+82-90 sec
+
+Final product statement + incident report export.
+
+End with memorable outcome.
+
+Avoid in the demo: slide decks, long architecture explanations, generic chat, excessive case switching, and claims that cannot be verified in the UI.
+
+17. Implementation Priority
+
+Priority
+
+Work item
+
+Why it matters
+
+P0
+
+Real GPT-6 Astra Responses API integration
+
+Challenge-critical. Astra must be genuinely used.
+
+P0
+
+CSV / log ingestion
+
+Makes the product usable beyond static cases.
+
+P0
+
+Astra -> diagnostic tool calling
+
+Turns Astra into the investigator.
+
+P0
+
+Structured evidence / diagnosis output
+
+Keeps the workflow deterministic and renderable.
+
+P0
+
+Automatic verification / counterfactual test
+
+Core differentiation.
+
+P0
+
+One flawless flagship demo
+
+Required for launch clarity.
+
+P1
+
+Evidence Graph
+
+Signature UI and auditability.
+
+P1
+
+Repair recommendation + re-test
+
+Completes the investigation loop.
+
+P1
+
+Incident report export
+
+Creates a finished engineering outcome.
+
+P1
+
+Reliability profile / score
+
+Improves comprehension and sharing.
+
+P2
+
+Challenge WhyLab adversarial review
+
+High-value differentiator if core is stable.
+
+P2
+
+GitHub / CI integration
+
+Useful engineering extension.
+
+P3
+
+Additional case studies
+
+Do only after core workflow is robust.
+
+P3
+
+Expanded classroom features
+
+Important long term, but not launch-critical.
+
+18. Student Implementation Checklist
+
+Item
+
+Acceptance criterion
+
+Priority
+
+A. Astra orchestration
+
+Astra receives the investigation objective and decides which diagnostic tools to call.
+
+P0
+
+B. Tool schemas
+
+Every statistical tool has explicit typed inputs/outputs and error handling.
+
+P0
+
+C. Structured diagnosis
+
+A validated schema contains evidence IDs, hypotheses, confidence, tests and repair candidates.
+
+P0
+
+D. CSV ingestion
+
+The system accepts at least y_true, y_pred and y_probability and validates the schema.
+
+P0
+
+E. Evidence provenance
+
+Every displayed claim links to a measured input, test result or user-provided assumption.
+
+P0
+
+F. Verification experiment
+
+At least one important hypothesis can trigger a deterministic falsification test.
+
+P0
+
+G. Repair loop
+
+A recommended threshold/policy can be applied and re-evaluated.
+
+P0
+
+H. Failure handling
+
+Invalid/missing data produces actionable errors rather than fabricated diagnosis.
+
+P0
+
+I. Evidence Graph
+
+UI shows observation -> hypothesis -> test -> result -> repair.
+
+P1
+
+J. Incident report
+
+Export includes evidence, tests, diagnosis, repair and before/after measurements.
+
+P1
+
+K. Reliability indicator
+
+Any score or risk band has a documented deterministic calculation.
+
+P1
+
+L. Adversarial review
+
+Optional second-pass review searches for alternate explanations.
+
+P2
+
+M. Demo fixture
+
+Flagship case can be reproduced reliably from a fixed dataset/export.
+
+P0
+
+N. Claim labelling
+
+All simulated financial/clinical impact is clearly labelled as simulated.
+
+P0
+
+O. Launch polish
+
+No dead buttons, placeholder values, broken loading states, or unexplained metrics.
+
+P0
+
+19. Suggested Diagnostic Tool Set for the First Release
+
+Tool
+
+Deterministic output
+
+Use by Astra
+
+profile_dataset
+
+class counts, missingness, ranges, slices
+
+Understand data and choose tests.
+
+compute_classification_metrics
+
+accuracy, BA, precision, recall, F1, PR-AUC, ROC-AUC where valid
+
+Detect metric contradictions.
+
+threshold_sweep
+
+metrics and expected cost across thresholds
+
+Find operating-point trade-offs.
+
+check_calibration
+
+Brier / calibration bins / ECE if implemented
+
+Detect probability miscalibration.
+
+scan_feature_leakage
+
+correlation / temporal / suspicious feature flags
+
+Test leakage hypothesis.
+
+run_drift_tests
+
+KS/PSI/Wasserstein or other selected tests
+
+Test distribution-shift hypothesis.
+
+slice_evaluation
+
+metrics by site/group/environment/time
+
+Find localized failure.
+
+run_counterfactual_test
+
+controlled resampling / ablation / perturbation result
+
+Attempt to falsify diagnosis.
+
+generate_repair_candidate
+
+structured repair plan; no free-text execution
+
+Define next action.
+
+re_evaluate_repair
+
+before/after metrics with same acceptance criteria
+
+Verify repair.
+
+20. Astra Investigation Log
+
+Add a compact audit log that demonstrates work without exposing hidden reasoning:
+
+12:31:02  Parsed 18,420 predictions12:31:03  Measured prevalence imbalance12:31:04  Requested balanced metrics12:31:05  Ran threshold sensitivity analysis12:31:07  Tested overfitting hypothesis12:31:09  Threshold misalignment remained supported12:31:11  Generated remediation candidate12:31:13  Re-evaluation completed
+
+21. Submission Readiness Gate
+
+Do not submit until all mandatory conditions below are true:
+
+[ ] The live product uses GPT-6 Astra, not a mock response.
+
+[ ] Astra calls at least one real diagnostic tool as part of the investigation.
+
+[ ] The user can upload or select real evaluation data.
+
+[ ] The system produces evidence-backed hypotheses rather than unsupported prose.
+
+[ ] At least one hypothesis is verified through a reproducible experiment.
+
+[ ] The Repair Lab demonstrates a measurable before-vs-after change.
+
+[ ] The demo can be repeated reliably from a clean browser session.
+
+[ ] Every displayed metric has correct units and a clear definition.
+
+[ ] Simulated impact is clearly labelled.
+
+[ ] The Product Hunt page, thumbnail, tagline and video all tell the same product story.
+
+[ ] Launch is scheduled for September 18, 2026 according to the current Product Hunt challenge guidance.
+
+22. Final Recommendation
+
+Submit WhyLab, but submit the Astra-native version. The product already has a strong diagnostic foundation. The highest-leverage change is to make GPT-6 Astra an active investigator that orchestrates evidence collection, selects tests, challenges hypotheses, recommends repairs and verifies outcomes.
+
+Target product story: "An autonomous ML failure investigator powered by GPT-6 Astra that gathers evidence, forms hypotheses, runs falsification experiments, repairs the model operating policy, and proves whether the repair worked."
+
+The team should resist feature expansion until the complete investigation loop is stable. One rigorous end-to-end investigation will be more convincing than many partially integrated features.
+
+Sources and Project Basis
+
+Project basis: WhyLab Faculty Mentorship Briefing - current project architecture, case studies, implementation status, six-stage diagnostic pipeline and planned Astra integration.
+
+Product Hunt - GPT-6 Astra Challenge
+
+Product Hunt forum - GPT-6 Astra Challenge launch guidance
+
+OpenAI - GPT-6 Astra model guidance
+
+OpenAI - GPT-6 Astra model page
+
+Note: Challenge details and API capabilities can change. Re-check the official Product Hunt and OpenAI pages immediately before final submission.

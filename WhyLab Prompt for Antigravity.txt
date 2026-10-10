@@ -1,0 +1,1192 @@
+You are the principal software architect, senior full-stack engineer,
+senior ML engineer, product designer, and QA engineer responsible for
+building WhyLab from the ground up.
+
+PROJECT
+=======
+WhyLab
+
+PRODUCT CATEGORY
+================
+AI Reliability / ML Debugging / ML Failure Investigation
+
+LONG-TERM PRODUCT VISION
+========================
+WhyLab is not a hackathon project, competition submission, classroom
+prototype, or Product Hunt demo.
+
+We are building it as a real-world software product intended eventually
+for public users and production use.
+
+WhyLab should help people across the machine-learning experience spectrum:
+
+- beginners learning machine learning
+- students
+- researchers
+- data scientists
+- ML engineers
+- MLOps engineers
+- AI engineers
+- advanced ML practitioners
+- engineering teams operating ML systems
+
+A beginner should be able to understand what WhyLab discovered and why
+it matters.
+
+An expert should still receive technically rigorous evidence, statistics,
+diagnostics, provenance, and controls.
+
+The product must therefore combine:
+
+1. technical depth
+2. evidence-backed ML diagnostics
+3. excellent usability
+4. progressive disclosure
+5. educational explanations
+6. production-quality engineering
+7. deterministic numerical analysis
+8. AI-guided investigation
+9. reproducibility
+10. extensibility
+
+==================================================
+SOURCE OF TRUTH
+==================================================
+
+I am providing a document:
+
+"WhyLab GPT-6 Astra Challenge Winning Strategy & Implementation Guide"
+
+Read the ENTIRE document before implementing anything.
+
+The document was originally written around a Product Hunt / GPT-6 Astra
+challenge.
+
+IMPORTANT:
+
+THE PRODUCT HUNT EVENT IS OVER.
+
+Do NOT optimize the new implementation for:
+- winning the challenge
+- challenge deadlines
+- submission requirements
+- a 60-90 second competition demo
+- Product Hunt launch requirements
+- screenshots for judges
+
+Instead:
+
+Extract the durable PRODUCT and ENGINEERING requirements from the document
+and adapt them into a production-oriented WhyLab application.
+
+Preserve the technically valuable ideas, especially:
+
+- Astra as an investigator rather than narrator
+- autonomous investigation
+- deterministic diagnostic tools
+- structured diagnosis
+- evidence provenance
+- hypothesis ranking
+- falsification / counterfactual testing
+- repair recommendations
+- repair verification
+- evidence graph
+- threshold/cost analysis
+- calibration analysis
+- leakage analysis
+- drift analysis
+- slice analysis
+- reliability assessment
+- incident reports
+- adversarial review
+- investigation audit log
+- Bring Your Own Model / dataset analysis
+
+Do NOT blindly implement competition-specific language or functionality.
+
+==================================================
+PRIMARY PRODUCT PRINCIPLE
+==================================================
+
+WhyLab should answer:
+
+"What is wrong with my ML system, what evidence supports that conclusion,
+how can we test whether that explanation is correct, what should I change,
+and did the change actually improve the system?"
+
+The fundamental workflow should be:
+
+INPUT
+  ↓
+VALIDATION
+  ↓
+DATA / MODEL EVIDENCE
+  ↓
+AI-GUIDED INVESTIGATION
+  ↓
+HYPOTHESES
+  ↓
+DETERMINISTIC TESTS
+  ↓
+FALSIFICATION / VERIFICATION
+  ↓
+DIAGNOSIS
+  ↓
+REPAIR OPTIONS
+  ↓
+APPLY / SIMULATE REPAIR
+  ↓
+RE-EVALUATE
+  ↓
+BEFORE-vs-AFTER EVIDENCE
+  ↓
+INCIDENT / RELIABILITY REPORT
+  ↓
+MONITORING RECOMMENDATIONS
+
+Never collapse this into:
+
+metrics → LLM → paragraph.
+
+==================================================
+CRITICAL AI ARCHITECTURE RULE
+==================================================
+
+GPT-6 Astra must function as the INVESTIGATION ORCHESTRATOR.
+
+Astra should decide, when appropriate:
+
+- what evidence is missing
+- which deterministic diagnostic tool should run
+- which hypotheses are plausible
+- which hypotheses deserve priority
+- what evidence supports or weakens them
+- which experiment could falsify them
+- what repair candidate should be evaluated
+- what success criterion should be used
+- whether enough evidence exists to make a conclusion
+
+However:
+
+ASTRA MUST NOT INVENT NUMERICAL RESULTS.
+
+All statistics, metrics, thresholds, scores, counts, tests, distributions,
+confusion matrices, calibration values, drift values, and before/after
+measurements must come from deterministic application code.
+
+The AI reasons over evidence.
+
+The deterministic engine computes evidence.
+
+Maintain this boundary throughout the architecture.
+
+==================================================
+CORE DIAGNOSTIC ENGINE
+==================================================
+
+Design deterministic, typed diagnostic tools.
+
+The initial tool system should support functionality equivalent to:
+
+profile_dataset
+compute_classification_metrics
+threshold_sweep
+check_calibration
+scan_feature_leakage
+run_drift_tests
+slice_evaluation
+run_counterfactual_test
+generate_repair_candidate
+re_evaluate_repair
+
+Do not treat these names as rigid if better architecture requires different
+internal organization.
+
+Each diagnostic capability must have:
+
+- explicit input schema
+- explicit output schema
+- validation
+- error handling
+- provenance
+- deterministic behavior where applicable
+- unit tests
+- meaningful failure messages
+
+Do not bury core statistical logic inside React components, API routes,
+or LLM prompts.
+
+Create proper domain/service boundaries.
+
+==================================================
+SUPPORTED INPUT WORKFLOW
+==================================================
+
+At minimum, support evaluation data containing:
+
+y_true
+y_pred
+y_probability
+
+Where appropriate support:
+
+timestamp
+group
+environment
+site
+device
+feature_*
+
+Design the ingestion layer so future formats can be added without rewriting
+the investigation system.
+
+Validate files before investigation.
+
+Never fabricate analysis when required data is absent.
+
+Explain:
+- what is missing
+- why it is required
+- how the user can fix the input
+
+==================================================
+ML ANALYSIS
+==================================================
+
+The product should eventually support robust analysis including:
+
+- dataset profiling
+- missing values
+- class distribution
+- class imbalance
+- accuracy
+- balanced accuracy
+- precision
+- recall
+- F1
+- PR-AUC
+- ROC-AUC where valid
+- confusion matrix
+- threshold sensitivity
+- calibration
+- Brier score where appropriate
+- ECE where implemented
+- feature leakage suspicion
+- distribution drift
+- slice performance
+- cost-sensitive threshold analysis
+- counterfactual / falsification experiments
+- repair evaluation
+- before-vs-after comparisons
+
+Do not display a metric merely because it exists.
+
+Every metric shown to the user must have context.
+
+==================================================
+EVIDENCE-FIRST ARCHITECTURE
+==================================================
+
+Every important conclusion should be traceable.
+
+Conceptually:
+
+Observation
+    ↓
+Evidence
+    ↓
+Hypothesis
+    ↓
+Diagnostic Test
+    ↓
+Measured Result
+    ↓
+Support / Weaken / Reject
+    ↓
+Diagnosis
+    ↓
+Repair Candidate
+    ↓
+Re-evaluation
+
+Design stable identifiers for evidence, hypotheses, tests, repairs,
+investigations, and artifacts.
+
+A displayed claim should be traceable to one of:
+
+- measured data
+- deterministic test result
+- uploaded artifact
+- user-provided assumption
+- clearly identified AI interpretation
+
+Do not present unsupported AI claims as measured facts.
+
+==================================================
+FALSIFICATION-FIRST INVESTIGATION
+==================================================
+
+One of WhyLab's defining characteristics should be:
+
+"WhyLab tries to prove its own diagnosis wrong."
+
+For important hypotheses, represent:
+
+HYPOTHESIS
+PREDICTION
+TEST
+OBSERVATION
+DECISION
+NEXT ACTION
+
+Possible decisions:
+
+SUPPORTED
+WEAKENED
+REJECTED
+INCONCLUSIVE
+
+Do not force confidence when evidence is insufficient.
+
+"Inconclusive" is a legitimate result.
+
+==================================================
+REPAIR LAB
+==================================================
+
+Diagnosis alone is insufficient.
+
+WhyLab should help users evaluate remediation.
+
+Examples include:
+
+- threshold adjustment
+- cost-sensitive operating point
+- calibration remediation
+- weighting recommendations
+- data collection recommendations
+- slice-specific remediation
+- leakage removal guidance
+- drift mitigation strategy
+
+Where a repair can be evaluated using uploaded data:
+
+calculate the result deterministically.
+
+Display:
+
+BEFORE
+vs
+AFTER
+
+using the SAME evaluation criteria.
+
+Never present hypothetical improvement as measured improvement.
+
+==================================================
+RELIABILITY ASSESSMENT
+==================================================
+
+If implementing a Reliability Score:
+
+DO NOT allow the LLM to invent the score.
+
+The calculation and weights must be deterministic, documented,
+inspectable, and traceable to evidence.
+
+If a scientifically defensible aggregate score is not ready, use a
+Reliability Profile / Risk Profile instead.
+
+Example dimensions might include:
+
+Performance
+Minority-class behavior
+Calibration
+Drift
+Leakage
+Cost alignment
+
+Prefer correctness over a visually impressive but arbitrary number.
+
+==================================================
+INCIDENT REPORT
+==================================================
+
+WhyLab should eventually produce a professional ML Reliability /
+Incident Report containing:
+
+- investigation ID
+- model identifier
+- dataset identifier
+- investigation objective
+- observed failure
+- severity / risk assessment
+- evidence summary
+- hypotheses
+- confidence / evidence strength
+- tests executed
+- measurements
+- rejected hypotheses
+- unresolved hypotheses
+- leading / confirmed diagnosis
+- recommended remediation
+- threshold / cost configuration
+- before/after evaluation
+- assumptions
+- simulated-vs-measured labels
+- monitoring recommendations
+- CI/CD reliability recommendations
+
+Design the internal data model so this report can later support
+Markdown, PDF, JSON, API responses, or integrations without rewriting
+the investigation system.
+
+==================================================
+AUDITABILITY
+==================================================
+
+Provide a user-facing Investigation Log.
+
+Show events such as:
+
+Dataset parsed
+Schema validated
+Class distribution measured
+Balanced metrics calculated
+Calibration test executed
+Drift test executed
+Hypothesis generated
+Hypothesis tested
+Repair candidate evaluated
+Re-evaluation completed
+
+DO NOT expose hidden model chain-of-thought.
+
+Show actions, tools, evidence, results, and decisions—not private
+reasoning traces.
+
+==================================================
+TARGET USER EXPERIENCE
+==================================================
+
+This requirement is CRITICAL.
+
+A beginner in machine learning must be able to use WhyLab without needing
+to search the internet to understand the interface.
+
+At the same time, advanced users must not feel that the application is
+oversimplified.
+
+Use PROGRESSIVE DISCLOSURE.
+
+For important ML concepts provide:
+
+LEVEL 1 — Plain-language meaning
+LEVEL 2 — Why it matters here
+LEVEL 3 — Technical details
+
+Example:
+
+Balanced Accuracy
+"Average recall across classes."
+
+Why it matters:
+"Your classes are imbalanced, so normal accuracy may hide poor performance
+on the minority class."
+
+Technical details:
+Show formula, class-level values, assumptions, and relevant caveats.
+
+Use this pattern throughout the product where useful.
+
+==================================================
+BEGINNER-FIRST EXPLANATION SYSTEM
+==================================================
+
+Every unfamiliar ML concept should be understandable in context.
+
+Use combinations of:
+
+- concise tooltips
+- "What does this mean?" interactions
+- contextual explanation cards
+- metric definitions
+- examples
+- formulas behind expandable sections
+- interpretation guidance
+- warnings
+- recommended next steps
+
+Avoid unexplained abbreviations.
+
+For example, do not show:
+
+PR-AUC: 0.41
+
+without allowing the user to understand:
+
+- what PR-AUC means
+- when it is useful
+- why it matters for this dataset
+- whether 0.41 is concerning in the current context
+- what should be inspected next
+
+However, do NOT overwhelm experienced users with permanent educational
+paragraphs.
+
+Keep deeper explanations expandable.
+
+==================================================
+FRONTEND DESIGN SYSTEM
+==================================================
+
+Aesthetic:
+
+DEVELOPER-FIRST DARK GRID
+
+Also recognizable as:
+
+modern SaaS dashboard / DevTool aesthetic.
+
+The interface should feel like a professional ML engineering product,
+not:
+
+- a student project
+- generic admin template
+- hackathon landing page
+- AI-generated dashboard
+- neon cyberpunk UI
+- gaming interface
+- overly decorative website
+
+DESIGN CHARACTERISTICS
+
+Use:
+
+- dark neutral surfaces
+- subtle grid structure
+- restrained borders
+- excellent typography
+- strong hierarchy
+- carefully controlled spacing
+- subtle elevation
+- muted secondary text
+- high information density without clutter
+- semantic status colors
+- polished charts
+- excellent empty states
+- professional loading states
+- skeletons where appropriate
+- responsive layouts
+- accessible contrast
+- keyboard-friendly controls
+- restrained motion
+
+Avoid:
+
+- excessive gradients
+- excessive glow
+- giant rounded cards everywhere
+- random bright colors
+- glassmorphism everywhere
+- unnecessary animations
+- excessive emojis
+- decorative charts
+- enormous marketing text inside the application
+- excessive AI-style purple gradients
+
+The UI should feel calm, technical, trustworthy, and precise.
+
+==================================================
+HYBRID MULTI-PAGE ARCHITECTURE
+==================================================
+
+Use a HYBRID MULTI-PAGE product architecture.
+
+Do NOT build the entire product as one giant dashboard.
+
+Separate major mental models into routes/pages while keeping investigation
+workflows cohesive.
+
+Design the information architecture after understanding the requirements.
+
+A reasonable starting point to evaluate is:
+
+/
+    Product / landing experience
+
+/workspace
+    User workspace / investigations
+
+/investigate
+    Start new investigation
+
+/investigations/[id]
+    Investigation overview
+
+/investigations/[id]/evidence
+    Evidence and diagnostic results
+
+/investigations/[id]/hypotheses
+    Hypotheses + falsification
+
+/investigations/[id]/repair
+    Repair Lab
+
+/investigations/[id]/report
+    Incident report
+
+/learn
+    ML reliability knowledge center
+
+/settings
+    Configuration
+
+This is NOT mandatory routing.
+
+Improve it if the domain model suggests a better structure.
+
+Avoid excessive page fragmentation.
+
+==================================================
+INFORMATION HIERARCHY
+==================================================
+
+Users should always understand:
+
+WHERE AM I?
+WHAT DID WHYLAB FIND?
+WHY DOES IT MATTER?
+WHAT EVIDENCE SUPPORTS IT?
+WHAT SHOULD I DO NEXT?
+
+Every major investigation screen should help answer these questions.
+
+Use breadcrumbs, navigation, investigation status, and contextual actions
+where appropriate.
+
+==================================================
+ACCESSIBILITY
+==================================================
+
+Treat accessibility as a product requirement.
+
+Implement:
+
+- semantic HTML
+- keyboard navigation
+- visible focus states
+- accessible labels
+- adequate contrast
+- non-color-only status indicators
+- screen-reader-friendly controls where practical
+- responsive design
+
+Do not sacrifice accessibility for aesthetics.
+
+==================================================
+ERROR EXPERIENCE
+==================================================
+
+Error states are part of the product.
+
+Never show vague messages like:
+
+"Something went wrong."
+
+when actionable information can be provided.
+
+Prefer:
+
+"We couldn't calculate PR-AUC because y_probability is missing."
+
+Then explain:
+
+WHY THIS MATTERS
+HOW TO FIX IT
+WHICH ANALYSES CAN STILL RUN
+
+Graceful degradation is preferred over total workflow failure.
+
+==================================================
+SECURITY AND PRIVACY
+==================================================
+
+Because this is intended as a real-world product:
+
+- validate uploads
+- enforce file-size limits
+- validate MIME/file types
+- sanitize untrusted content
+- validate server inputs
+- keep secrets server-side
+- never expose API keys
+- do not trust client-provided analysis results
+- avoid unsafe arbitrary code execution
+- avoid logging sensitive uploaded data unnecessarily
+- create appropriate environment-variable handling
+- provide safe API error responses
+
+Do not over-engineer enterprise security at the beginning, but do not
+create architectural security debt unnecessarily.
+
+==================================================
+ENGINEERING QUALITY
+==================================================
+
+Prefer:
+
+- strict TypeScript
+- modular architecture
+- explicit domain types
+- schema validation
+- reusable components
+- service boundaries
+- deterministic ML utilities
+- testable functions
+- clean error handling
+- environment validation
+- structured logging
+- consistent naming
+- clear state ownership
+- minimal unnecessary dependencies
+
+Avoid:
+
+- giant components
+- giant API routes
+- duplicated statistical logic
+- `any` everywhere
+- business logic inside UI components
+- magic constants
+- hidden global state
+- fragile parsing
+- mock values leaking into production UI
+- placeholder buttons
+- silent errors
+- unnecessary abstractions
+- premature microservices
+
+Use the simplest architecture that can grow into a real product.
+
+==================================================
+TESTING STRATEGY
+==================================================
+
+Testing is mandatory.
+
+For every implementation milestone, add appropriate:
+
+UNIT TESTS
+for deterministic utilities and ML calculations.
+
+INTEGRATION TESTS
+for APIs, schemas, orchestration, and persistence.
+
+END-TO-END TESTS
+for critical user journeys.
+
+REGRESSION FIXTURES
+for known ML failure cases.
+
+Important numerical functionality should use known expected outputs.
+
+Never consider a milestone complete merely because the page renders.
+
+==================================================
+GOLDEN ML FIXTURES
+==================================================
+
+Create small deterministic datasets that intentionally demonstrate:
+
+- class imbalance
+- misleading accuracy
+- threshold problems
+- calibration problems
+- leakage
+- distribution shift
+- slice failures
+
+These should become regression fixtures.
+
+A future code change must not silently change diagnostic conclusions.
+
+==================================================
+IMPLEMENTATION PRIORITY
+==================================================
+
+Reinterpret the uploaded document for a real product.
+
+Use this broad priority:
+
+PHASE 0 — FOUNDATION
+- inspect repository
+- architecture
+- environment configuration
+- design tokens
+- routing shell
+- core schemas
+- test infrastructure
+- persistence strategy
+- error architecture
+
+PHASE 1 — INPUT + DETERMINISTIC ML ENGINE
+- upload
+- schema validation
+- profiling
+- metrics
+- confusion matrix
+- threshold analysis
+- deterministic tests
+
+PHASE 2 — INVESTIGATION DOMAIN
+- investigation lifecycle
+- evidence model
+- hypothesis model
+- diagnostic tool registry
+- provenance
+- investigation log
+
+PHASE 3 — ASTRA ORCHESTRATION
+- real model integration
+- structured outputs
+- diagnostic tool calling
+- controlled orchestration
+- failure handling
+- evidence-backed diagnosis
+
+PHASE 4 — FALSIFICATION
+- hypothesis testing
+- counterfactual experiments
+- support/weaken/reject/inconclusive decisions
+
+PHASE 5 — EVIDENCE UX
+- investigation workspace
+- evidence graph
+- beginner explanations
+- advanced technical detail
+
+PHASE 6 — REPAIR LAB
+- repair candidates
+- threshold/cost optimization
+- apply/simulate
+- deterministic re-evaluation
+- before/after comparison
+
+PHASE 7 — RELIABILITY + REPORTING
+- reliability profile
+- incident report
+- export architecture
+- monitoring recommendations
+
+PHASE 8 — ADVANCED INVESTIGATION
+- adversarial review
+- richer drift/leakage analysis
+- advanced slices
+- additional model/task support
+
+PHASE 9 — PRODUCTION HARDENING
+- security
+- accessibility
+- performance
+- comprehensive tests
+- observability
+- failure recovery
+- responsive polish
+
+Do NOT attempt all phases at once.
+
+==================================================
+CRITICAL WORKING MODE
+==================================================
+
+THIS IS VERY IMPORTANT.
+
+Do NOT implement the entire project in one giant pass.
+
+Work ONE MILESTONE AT A TIME.
+
+For each milestone:
+
+1. Inspect relevant existing files.
+2. Understand current architecture.
+3. State internally what must change.
+4. Implement the smallest complete vertical slice.
+5. Run formatting/linting.
+6. Run type checking.
+7. Run relevant unit tests.
+8. Run integration tests where applicable.
+9. Run/build the application where practical.
+10. Fix errors introduced by your changes.
+11. Review your own diff.
+12. Remove dead/temporary code.
+13. Confirm acceptance criteria.
+14. Stop.
+
+Do not automatically start the next major milestone.
+
+==================================================
+AUTONOMY
+==================================================
+
+You have permission to make routine engineering decisions without asking
+me repeatedly.
+
+If several approaches are possible:
+
+Choose the approach that is:
+
+1. safest
+2. simplest
+3. most maintainable
+4. most idiomatic for the current stack
+5. easiest to test
+6. suitable for production evolution
+
+Do NOT repeatedly ask:
+
+"Which option do you prefer?"
+
+when one approach is clearly better.
+
+However, STOP and ask me before:
+
+- destructive data deletion
+- deleting major working features without migration
+- major framework replacement
+- irreversible database migration
+- spending money / provisioning paid infrastructure
+- exposing secrets
+- changing the fundamental product scope
+
+==================================================
+DO NOT PRESERVE BAD LEGACY ARCHITECTURE
+==================================================
+
+Because this is a restart:
+
+Do not blindly reproduce previous implementation mistakes.
+
+If existing code is useful, reuse it.
+
+If existing code is poorly structured, replace/refactor it.
+
+Before doing so, determine whether it contains:
+
+- useful ML formulas
+- fixtures
+- datasets
+- domain knowledge
+- test cases
+- working components
+- schemas
+- assets
+
+Preserve useful intellectual work while rebuilding weak architecture.
+
+==================================================
+DEPENDENCY DISCIPLINE
+==================================================
+
+Do not install a library merely because it makes a small task easier.
+
+Before adding a dependency ask:
+
+- can the current stack already do this?
+- is it maintained?
+- does it materially reduce complexity?
+- does it increase bundle size?
+- does it introduce security/maintenance risk?
+
+Prefer fewer, high-quality dependencies.
+
+==================================================
+PERFORMANCE
+==================================================
+
+Design for realistic datasets without prematurely optimizing.
+
+Avoid:
+
+- unnecessary client-side processing
+- repeatedly parsing the same dataset
+- recomputing expensive diagnostics unnecessarily
+- unnecessary rerenders
+- serial execution of independent diagnostics when safe parallelism is possible
+
+Where appropriate:
+
+- cache derived results
+- stream progress
+- execute independent diagnostic tools concurrently
+- keep large computation server-side
+
+==================================================
+DATA AND RESULT INTEGRITY
+==================================================
+
+This is non-negotiable.
+
+Never hard-code impressive-looking metrics into production views.
+
+Never fabricate:
+
+- confidence
+- reliability score
+- savings
+- medical impact
+- business impact
+- model improvement
+- statistical significance
+
+Clearly distinguish:
+
+MEASURED
+DERIVED
+USER-PROVIDED
+SIMULATED
+AI-INTERPRETED
+
+This distinction should exist in the data model where practical,
+not merely visual text.
+
+==================================================
+DOCUMENTATION
+==================================================
+
+Maintain useful project documentation as implementation progresses.
+
+At minimum eventually document:
+
+- architecture
+- local setup
+- environment variables
+- diagnostic tools
+- schemas
+- investigation lifecycle
+- evidence provenance
+- reliability calculations
+- testing strategy
+- security assumptions
+- deployment requirements
+
+Documentation should explain WHY important decisions exist, not merely
+repeat code.
+
+==================================================
+FIRST TASK — DO THIS NOW
+==================================================
+
+Do NOT start coding immediately.
+
+First:
+
+1. Read the entire uploaded implementation guide.
+2. Inspect the entire repository structure.
+3. Inspect package.json and dependency versions.
+4. Inspect the existing frontend.
+5. Inspect existing routes/pages.
+6. Inspect APIs/backend code.
+7. Inspect existing ML/statistical logic.
+8. Inspect Astra/OpenAI integration if present.
+9. Inspect tests.
+10. Inspect configuration/environment handling.
+11. Inspect persistence/database code.
+12. Identify reusable assets and datasets.
+13. Identify technical debt and broken architecture.
+14. Identify what should be reused vs rebuilt.
+
+Then create:
+
+docs/REBUILD_PLAN.md
+
+The document must contain:
+
+1. Current-state assessment
+2. Useful existing components worth preserving
+3. Existing problems / technical debt
+4. Proposed production architecture
+5. Proposed folder structure
+6. Domain model
+7. Data flow
+8. Astra orchestration design
+9. Deterministic diagnostic-engine design
+10. Evidence/provenance design
+11. Investigation lifecycle/state machine
+12. Frontend information architecture
+13. Developer-First Dark Grid design system
+14. Beginner/advanced progressive-disclosure UX strategy
+15. Persistence strategy
+16. Error-handling strategy
+17. Security baseline
+18. Testing strategy
+19. Milestones
+20. Acceptance criteria for every milestone
+21. Risks / assumptions
+22. Features from the challenge document that should be changed,
+    postponed, or removed now that Product Hunt is irrelevant
+
+Then STOP.
+
+Do not implement Phase 0 yet.
+
+Show me:
+
+- your concise repository assessment
+- the proposed architecture
+- the milestone sequence
+- the most important risks
+- the exact first implementation milestone you recommend
+
+Wait for my approval before beginning implementation.
+
+==================================================
+DEFINITION OF SUCCESS
+==================================================
+
+The finished WhyLab should feel like a real ML engineering product.
+
+A beginner should be able to upload evaluation data and understand:
+
+"What happened?"
+
+"Is this bad?"
+
+"Why is it happening?"
+
+"How do we know?"
+
+"What can I do?"
+
+"Did the fix work?"
+
+An advanced practitioner should be able to inspect:
+
+- exact metrics
+- evidence provenance
+- test methodology
+- assumptions
+- statistical outputs
+- slices
+- thresholds
+- calibration
+- drift
+- falsification results
+- before/after measurements
+
+WhyLab should never ask users to trust an unexplained AI conclusion.
+
+The core product principle is:
+
+AI decides what to investigate.
+Deterministic tools measure what happened.
+Evidence supports the diagnosis.
+Experiments challenge the diagnosis.
+Repairs are re-tested.
+The UI makes the entire process understandable.
+
+Build for correctness first.
+Then clarity.
+Then reliability.
+Then polish.
+Then scale.

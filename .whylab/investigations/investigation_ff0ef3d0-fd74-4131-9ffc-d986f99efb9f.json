@@ -1,0 +1,1119 @@
+{
+  "schemaVersion": 2,
+  "id": "investigation_ff0ef3d0-fd74-4131-9ffc-d986f99efb9f",
+  "objective": "Investigate reliability risks and performance degradation on melanoma-synthetic.csv.",
+  "status": "completed",
+  "stopReason": null,
+  "createdAt": "2026-10-08T11:15:57.241Z",
+  "updatedAt": "2026-10-08T11:15:57.289Z",
+  "sources": [
+    {
+      "id": "source_9d14360d-413c-4131-97d7-b38ebb5e2ceb",
+      "kind": "uploaded_file",
+      "name": "melanoma-synthetic.csv",
+      "capturedAt": "2026-10-08T11:15:57.241Z",
+      "contentDigest": null
+    }
+  ],
+  "datasets": [
+    {
+      "id": "dataset_77935102-008c-4147-af24-d08f4672a19b",
+      "sourceId": "source_9d14360d-413c-4131-97d7-b38ebb5e2ceb",
+      "name": "melanoma-synthetic.csv",
+      "rowCount": 100,
+      "columns": [
+        "y_true",
+        "y_pred",
+        "y_probability"
+      ],
+      "role": "evaluation",
+      "task": "binary_classification",
+      "targetColumn": "y_true",
+      "predictionColumn": "y_pred",
+      "probabilityColumn": "y_probability",
+      "positiveLabel": "1"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "evidence_bc03a6e2-9dd1-4fd0-8846-ce3f3af2deec",
+      "kind": "measurement",
+      "description": "Baseline classification metrics evaluated on melanoma-synthetic.csv: sample size 100.",
+      "measurements": [
+        {
+          "name": "accuracy",
+          "status": "measured",
+          "value": 0.92,
+          "unit": "ratio",
+          "sampleSize": 100
+        },
+        {
+          "name": "precision",
+          "status": "measured",
+          "value": 1,
+          "unit": "ratio",
+          "sampleSize": 100
+        },
+        {
+          "name": "recall",
+          "status": "measured",
+          "value": 0.2,
+          "unit": "ratio",
+          "sampleSize": 100
+        },
+        {
+          "name": "specificity",
+          "status": "measured",
+          "value": 1,
+          "unit": "ratio",
+          "sampleSize": 100
+        },
+        {
+          "name": "f1",
+          "status": "measured",
+          "value": 0.3333333333333333,
+          "unit": "ratio",
+          "sampleSize": 100
+        },
+        {
+          "name": "positive_prevalence",
+          "status": "measured",
+          "value": 0.1,
+          "unit": "ratio",
+          "sampleSize": 100
+        },
+        {
+          "name": "negative_prevalence",
+          "status": "measured",
+          "value": 0.9,
+          "unit": "ratio",
+          "sampleSize": 100
+        },
+        {
+          "name": "balanced_accuracy",
+          "status": "measured",
+          "value": 0.6,
+          "unit": "ratio",
+          "sampleSize": 100
+        },
+        {
+          "name": "minority_recall",
+          "status": "measured",
+          "value": 0.2,
+          "unit": "ratio",
+          "sampleSize": 100
+        },
+        {
+          "name": "roc_auc",
+          "status": "measured",
+          "value": 0.9955555555555556,
+          "unit": "ratio",
+          "sampleSize": 100
+        },
+        {
+          "name": "pr_auc_average_precision",
+          "status": "measured",
+          "value": 0.9714285714285713,
+          "unit": "ratio",
+          "sampleSize": 100
+        }
+      ],
+      "provenance": {
+        "kind": "tool_result",
+        "resultId": "result_cc71408e-30bb-4f7b-8cc5-2a316b35bb8d"
+      }
+    },
+    {
+      "id": "evidence_84b2a7fe-7b31-41bd-b1bd-f28927f74c95",
+      "kind": "measurement",
+      "description": "At the declared 10 percentage-point threshold, raw accuracy exceeds balanced accuracy by 32.00000000000001 points and minority recall by 72 points. Both passing supports the prediction; one passing weakens it; neither passing rejects this threshold-specific prediction on this dataset.",
+      "measurements": [
+        {
+          "name": "equal_class_weight_accuracy",
+          "status": "measured",
+          "value": 0.6,
+          "unit": "ratio",
+          "sampleSize": 100
+        },
+        {
+          "name": "accuracy_minus_balanced_accuracy",
+          "status": "measured",
+          "value": 32.00000000000001,
+          "unit": "percentage_points",
+          "sampleSize": 100
+        },
+        {
+          "name": "accuracy_minus_minority_recall",
+          "status": "measured",
+          "value": 72,
+          "unit": "percentage_points",
+          "sampleSize": 100
+        },
+        {
+          "name": "accuracy_paradox_gap",
+          "status": "measured",
+          "value": 32.00000000000001,
+          "unit": "percentage_points",
+          "sampleSize": 100
+        }
+      ],
+      "provenance": {
+        "kind": "experiment",
+        "experimentId": "experiment_85cb3f07-30b4-4efb-9471-162aa0211428"
+      }
+    },
+    {
+      "id": "evidence_468655e4-58d8-4d59-a06b-59404294d68d",
+      "kind": "measurement",
+      "description": "Threshold adjustment from 0.50 to 0.40 shifted recall from 20.0% to 90.0% and accuracy from 92.0% to 99.0%. False negatives changed by -7, false positives changed by 0. Criterion 'recall at_least 0.8' was satisfied.",
+      "measurements": [
+        {
+          "name": "accuracy",
+          "status": "measured",
+          "value": 0.99,
+          "unit": "ratio",
+          "sampleSize": 100
+        },
+        {
+          "name": "precision",
+          "status": "measured",
+          "value": 1,
+          "unit": "ratio",
+          "sampleSize": 100
+        },
+        {
+          "name": "recall",
+          "status": "measured",
+          "value": 0.9,
+          "unit": "ratio",
+          "sampleSize": 100
+        },
+        {
+          "name": "specificity",
+          "status": "measured",
+          "value": 1,
+          "unit": "ratio",
+          "sampleSize": 100
+        },
+        {
+          "name": "f1",
+          "status": "measured",
+          "value": 0.9473684210526315,
+          "unit": "ratio",
+          "sampleSize": 100
+        },
+        {
+          "name": "positive_prevalence",
+          "status": "measured",
+          "value": 0.1,
+          "unit": "ratio",
+          "sampleSize": 100
+        },
+        {
+          "name": "negative_prevalence",
+          "status": "measured",
+          "value": 0.9,
+          "unit": "ratio",
+          "sampleSize": 100
+        },
+        {
+          "name": "balanced_accuracy",
+          "status": "measured",
+          "value": 0.95,
+          "unit": "ratio",
+          "sampleSize": 100
+        },
+        {
+          "name": "minority_recall",
+          "status": "measured",
+          "value": 0.9,
+          "unit": "ratio",
+          "sampleSize": 100
+        }
+      ],
+      "provenance": {
+        "kind": "tool_result",
+        "resultId": "result_ce4dbc20-f4d0-47c6-9959-ffb5a6898f59"
+      }
+    }
+  ],
+  "toolCalls": [
+    {
+      "id": "call_3073285a-85e7-425f-af4f-d24cd13a9d62",
+      "investigationId": "investigation_ff0ef3d0-fd74-4131-9ffc-d986f99efb9f",
+      "tool": "compute_classification_metrics",
+      "toolVersion": 1,
+      "requestedAt": "2026-10-08T11:15:57.244Z",
+      "input": {
+        "datasetId": "dataset_77935102-008c-4147-af24-d08f4672a19b",
+        "positiveLabel": "1"
+      }
+    },
+    {
+      "id": "call_9d5e6ecf-03e4-4669-a595-30d9f21cf4db",
+      "investigationId": "investigation_ff0ef3d0-fd74-4131-9ffc-d986f99efb9f",
+      "tool": "run_counterfactual_test",
+      "toolVersion": 1,
+      "requestedAt": "2026-10-08T11:15:57.250Z",
+      "input": {
+        "datasetId": "dataset_77935102-008c-4147-af24-d08f4672a19b",
+        "positiveLabel": "1",
+        "hypothesisId": "hypothesis_6bb62a1a-e396-4eee-a126-094dd1a11951",
+        "method": "accuracy_paradox",
+        "seed": 42,
+        "criterion": {
+          "metric": "accuracy_paradox_gap",
+          "operator": "at_least",
+          "value": 10,
+          "unit": "percentage_points"
+        }
+      }
+    },
+    {
+      "id": "call_fc0cee87-3120-4151-8e0b-fe5561558b8c",
+      "investigationId": "investigation_ff0ef3d0-fd74-4131-9ffc-d986f99efb9f",
+      "tool": "generate_repair_candidate",
+      "toolVersion": 1,
+      "requestedAt": "2026-10-08T11:15:57.257Z",
+      "input": {
+        "datasetId": "dataset_77935102-008c-4147-af24-d08f4672a19b",
+        "positiveLabel": "1",
+        "hypothesisId": "hypothesis_6bb62a1a-e396-4eee-a126-094dd1a11951",
+        "targetMetric": "recall",
+        "targetValue": 0.8,
+        "costs": null,
+        "criterion": {
+          "metric": "recall",
+          "operator": "at_least",
+          "value": 0.8,
+          "unit": "ratio"
+        }
+      }
+    },
+    {
+      "id": "call_4558e2bd-33db-4202-8d27-dd1a785e9410",
+      "investigationId": "investigation_ff0ef3d0-fd74-4131-9ffc-d986f99efb9f",
+      "tool": "re_evaluate_repair",
+      "toolVersion": 1,
+      "requestedAt": "2026-10-08T11:15:57.286Z",
+      "input": {
+        "datasetId": "dataset_77935102-008c-4147-af24-d08f4672a19b",
+        "positiveLabel": "1",
+        "repairId": "repair_f93fd013-6329-439f-a71a-3d26c98be107",
+        "baselineThreshold": 0.5,
+        "repairedThreshold": 0.4,
+        "criterion": {
+          "metric": "recall",
+          "operator": "at_least",
+          "value": 0.8,
+          "unit": "ratio"
+        },
+        "baselineEvidenceIds": [
+          "evidence_bc03a6e2-9dd1-4fd0-8846-ce3f3af2deec"
+        ]
+      }
+    }
+  ],
+  "toolResults": [
+    {
+      "id": "result_cc71408e-30bb-4f7b-8cc5-2a316b35bb8d",
+      "callId": "call_3073285a-85e7-425f-af4f-d24cd13a9d62",
+      "tool": "compute_classification_metrics",
+      "toolVersion": 1,
+      "completedAt": "2026-10-08T11:15:57.248Z",
+      "datasetIds": [
+        "dataset_77935102-008c-4147-af24-d08f4672a19b"
+      ],
+      "evidenceIds": [
+        "evidence_bc03a6e2-9dd1-4fd0-8846-ce3f3af2deec"
+      ],
+      "limitations": [
+        "Descriptive point estimates only; no confidence intervals or causal conclusions.",
+        "PR-AUC uses non-interpolated average precision, not trapezoidal PR area.",
+        "Prediction-based metrics use supplied predictions; no probability threshold is inferred.",
+        "Minority recall refers to the positive class in this evaluation population."
+      ],
+      "status": "completed",
+      "output": {
+        "positiveLabel": "1",
+        "negativeLabel": "0",
+        "sampleSize": 100,
+        "confusion": {
+          "truePositive": 2,
+          "falsePositive": 0,
+          "trueNegative": 90,
+          "falseNegative": 8
+        },
+        "metrics": [
+          {
+            "name": "accuracy",
+            "status": "measured",
+            "value": 0.92,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "precision",
+            "status": "measured",
+            "value": 1,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "recall",
+            "status": "measured",
+            "value": 0.2,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "specificity",
+            "status": "measured",
+            "value": 1,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "f1",
+            "status": "measured",
+            "value": 0.3333333333333333,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "positive_prevalence",
+            "status": "measured",
+            "value": 0.1,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "negative_prevalence",
+            "status": "measured",
+            "value": 0.9,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "balanced_accuracy",
+            "status": "measured",
+            "value": 0.6,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "minority_recall",
+            "status": "measured",
+            "value": 0.2,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "roc_auc",
+            "status": "measured",
+            "value": 0.9955555555555556,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "pr_auc_average_precision",
+            "status": "measured",
+            "value": 0.9714285714285713,
+            "unit": "ratio",
+            "sampleSize": 100
+          }
+        ]
+      }
+    },
+    {
+      "id": "result_31cb2c01-d2fd-4fae-a23d-00f39ce05b6b",
+      "callId": "call_9d5e6ecf-03e4-4669-a595-30d9f21cf4db",
+      "tool": "run_counterfactual_test",
+      "toolVersion": 1,
+      "completedAt": "2026-10-08T11:15:57.256Z",
+      "datasetIds": [
+        "dataset_77935102-008c-4147-af24-d08f4672a19b"
+      ],
+      "evidenceIds": [],
+      "limitations": [],
+      "status": "completed",
+      "output": {
+        "hypothesisId": "hypothesis_6bb62a1a-e396-4eee-a126-094dd1a11951",
+        "outcome": "supports",
+        "baseline": [
+          {
+            "name": "accuracy",
+            "status": "measured",
+            "value": 0.92,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "precision",
+            "status": "measured",
+            "value": 1,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "recall",
+            "status": "measured",
+            "value": 0.2,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "specificity",
+            "status": "measured",
+            "value": 1,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "f1",
+            "status": "measured",
+            "value": 0.3333333333333333,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "positive_prevalence",
+            "status": "measured",
+            "value": 0.1,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "negative_prevalence",
+            "status": "measured",
+            "value": 0.9,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "balanced_accuracy",
+            "status": "measured",
+            "value": 0.6,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "minority_recall",
+            "status": "measured",
+            "value": 0.2,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "roc_auc",
+            "status": "measured",
+            "value": 0.9955555555555556,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "pr_auc_average_precision",
+            "status": "measured",
+            "value": 0.9714285714285713,
+            "unit": "ratio",
+            "sampleSize": 100
+          }
+        ],
+        "comparison": [
+          {
+            "name": "equal_class_weight_accuracy",
+            "status": "measured",
+            "value": 0.6,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "accuracy_minus_balanced_accuracy",
+            "status": "measured",
+            "value": 32.00000000000001,
+            "unit": "percentage_points",
+            "sampleSize": 100
+          },
+          {
+            "name": "accuracy_minus_minority_recall",
+            "status": "measured",
+            "value": 72,
+            "unit": "percentage_points",
+            "sampleSize": 100
+          },
+          {
+            "name": "accuracy_paradox_gap",
+            "status": "measured",
+            "value": 32.00000000000001,
+            "unit": "percentage_points",
+            "sampleSize": 100
+          }
+        ],
+        "evidenceIds": [
+          "evidence_84b2a7fe-7b31-41bd-b1bd-f28927f74c95"
+        ],
+        "rationale": "At the declared 10 percentage-point threshold, raw accuracy exceeds balanced accuracy by 32.00000000000001 points and minority recall by 72 points. Both passing supports the prediction; one passing weakens it; neither passing rejects this threshold-specific prediction on this dataset."
+      }
+    },
+    {
+      "id": "result_189b837a-4f4d-4f3c-9403-6df78e741001",
+      "callId": "call_fc0cee87-3120-4151-8e0b-fe5561558b8c",
+      "tool": "generate_repair_candidate",
+      "toolVersion": 1,
+      "completedAt": "2026-10-08T11:15:57.285Z",
+      "datasetIds": [
+        "dataset_77935102-008c-4147-af24-d08f4672a19b"
+      ],
+      "evidenceIds": [],
+      "limitations": [
+        "Every operating point uses the same evaluation rows and probability >= threshold.",
+        "Selection, when requested through costs, minimizes total FN x FN cost + FP x FP cost over supplied candidates only. Exact cost ties choose the highest threshold.",
+        "User-supplied costs are assumptions, not measured clinical or financial outcomes.",
+        "Choosing a threshold on this dataset does not establish performance on a new holdout. No policy has been applied.",
+        "A threshold of 1 still predicts positive for probability 1; the [0,1] candidate range does not always include an all-negative policy.",
+        "No cost objective supplied: no operating point was selected.",
+        "Operating threshold shifts adjust decision boundary sensitivity without retraining or feature modification.",
+        "Performance estimates are derived from the supplied evaluation dataset; out-of-distribution performance may differ.",
+        "Threshold optimization assumes probability estimates are monotonically ordered relative to true risk."
+      ],
+      "status": "completed",
+      "output": {
+        "hypothesisId": "hypothesis_6bb62a1a-e396-4eee-a126-094dd1a11951",
+        "datasetId": "dataset_77935102-008c-4147-af24-d08f4672a19b",
+        "selectedThreshold": 0.4,
+        "policy": {
+          "threshold": 0.4,
+          "positiveLabel": "1",
+          "comparison": "greater_than_or_equal",
+          "costs": null
+        },
+        "projectedConfusion": {
+          "truePositive": 9,
+          "falsePositive": 0,
+          "trueNegative": 90,
+          "falseNegative": 1
+        },
+        "projectedMetrics": [
+          {
+            "name": "accuracy",
+            "status": "measured",
+            "value": 0.99,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "precision",
+            "status": "measured",
+            "value": 1,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "recall",
+            "status": "measured",
+            "value": 0.9,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "specificity",
+            "status": "measured",
+            "value": 1,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "f1",
+            "status": "measured",
+            "value": 0.9473684210526315,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "positive_prevalence",
+            "status": "measured",
+            "value": 0.1,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "negative_prevalence",
+            "status": "measured",
+            "value": 0.9,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "balanced_accuracy",
+            "status": "measured",
+            "value": 0.95,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "minority_recall",
+            "status": "measured",
+            "value": 0.9,
+            "unit": "ratio",
+            "sampleSize": 100
+          }
+        ],
+        "rationale": "Threshold 0.40 satisfies target recall constraint >= 80.0% (achieving 90.0%) while maximizing operating precision.",
+        "limitations": [
+          "Every operating point uses the same evaluation rows and probability >= threshold.",
+          "Selection, when requested through costs, minimizes total FN x FN cost + FP x FP cost over supplied candidates only. Exact cost ties choose the highest threshold.",
+          "User-supplied costs are assumptions, not measured clinical or financial outcomes.",
+          "Choosing a threshold on this dataset does not establish performance on a new holdout. No policy has been applied.",
+          "A threshold of 1 still predicts positive for probability 1; the [0,1] candidate range does not always include an all-negative policy.",
+          "No cost objective supplied: no operating point was selected.",
+          "Operating threshold shifts adjust decision boundary sensitivity without retraining or feature modification.",
+          "Performance estimates are derived from the supplied evaluation dataset; out-of-distribution performance may differ.",
+          "Threshold optimization assumes probability estimates are monotonically ordered relative to true risk."
+        ]
+      }
+    },
+    {
+      "id": "result_ce4dbc20-f4d0-47c6-9959-ffb5a6898f59",
+      "callId": "call_4558e2bd-33db-4202-8d27-dd1a785e9410",
+      "tool": "re_evaluate_repair",
+      "toolVersion": 1,
+      "completedAt": "2026-10-08T11:15:57.287Z",
+      "datasetIds": [
+        "dataset_77935102-008c-4147-af24-d08f4672a19b"
+      ],
+      "evidenceIds": [
+        "evidence_468655e4-58d8-4d59-a06b-59404294d68d"
+      ],
+      "limitations": [
+        "Re-evaluation is computed on the identical evaluation rows supplied by the user.",
+        "Threshold policy shifts adjust operating sensitivity without retraining model parameters.",
+        "Does not constitute independent prospective validation on future or external data splits."
+      ],
+      "status": "completed",
+      "output": {
+        "repairId": "repair_f93fd013-6329-439f-a71a-3d26c98be107",
+        "datasetId": "dataset_77935102-008c-4147-af24-d08f4672a19b",
+        "status": "passed",
+        "baselineMetrics": [
+          {
+            "name": "accuracy",
+            "status": "measured",
+            "value": 0.92,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "precision",
+            "status": "measured",
+            "value": 1,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "recall",
+            "status": "measured",
+            "value": 0.2,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "specificity",
+            "status": "measured",
+            "value": 1,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "f1",
+            "status": "measured",
+            "value": 0.3333333333333333,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "positive_prevalence",
+            "status": "measured",
+            "value": 0.1,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "negative_prevalence",
+            "status": "measured",
+            "value": 0.9,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "balanced_accuracy",
+            "status": "measured",
+            "value": 0.6,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "minority_recall",
+            "status": "measured",
+            "value": 0.2,
+            "unit": "ratio",
+            "sampleSize": 100
+          }
+        ],
+        "repairedMetrics": [
+          {
+            "name": "accuracy",
+            "status": "measured",
+            "value": 0.99,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "precision",
+            "status": "measured",
+            "value": 1,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "recall",
+            "status": "measured",
+            "value": 0.9,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "specificity",
+            "status": "measured",
+            "value": 1,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "f1",
+            "status": "measured",
+            "value": 0.9473684210526315,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "positive_prevalence",
+            "status": "measured",
+            "value": 0.1,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "negative_prevalence",
+            "status": "measured",
+            "value": 0.9,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "balanced_accuracy",
+            "status": "measured",
+            "value": 0.95,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "minority_recall",
+            "status": "measured",
+            "value": 0.9,
+            "unit": "ratio",
+            "sampleSize": 100
+          }
+        ],
+        "confusionDelta": {
+          "truePositive": 7,
+          "falsePositive": 0,
+          "trueNegative": 0,
+          "falseNegative": -7
+        },
+        "criterionMet": true,
+        "rationale": "Threshold adjustment from 0.50 to 0.40 shifted recall from 20.0% to 90.0% and accuracy from 92.0% to 99.0%. False negatives changed by -7, false positives changed by 0. Criterion 'recall at_least 0.8' was satisfied.",
+        "limitations": [
+          "Re-evaluation is computed on the identical evaluation rows supplied by the user.",
+          "Threshold policy shifts adjust operating sensitivity without retraining model parameters.",
+          "Does not constitute independent prospective validation on future or external data splits."
+        ]
+      }
+    }
+  ],
+  "hypotheses": [
+    {
+      "id": "hypothesis_6bb62a1a-e396-4eee-a126-094dd1a11951",
+      "statement": "Class Imbalance Distortion: High raw accuracy conceals severe sensitivity suppression on the minority class due to an uncalibrated default 0.50 decision threshold.",
+      "status": "supported",
+      "confidence": {
+        "kind": "evidence_strength",
+        "level": "strong",
+        "rationale": "Raw accuracy exceeds both balanced accuracy and minority recall by at least 10 percentage points."
+      },
+      "evidence": [
+        {
+          "evidenceId": "evidence_bc03a6e2-9dd1-4fd0-8846-ce3f3af2deec",
+          "relationship": "supports",
+          "rationale": "Baseline metrics demonstrate strong tension between overall accuracy (92.0%) and minority class recall (20.0%), suggesting majority class domination under 10.0% prevalence."
+        },
+        {
+          "evidenceId": "evidence_84b2a7fe-7b31-41bd-b1bd-f28927f74c95",
+          "relationship": "supports",
+          "rationale": "Raw accuracy exceeds both balanced accuracy and minority recall by at least 10 percentage points."
+        }
+      ],
+      "unresolvedQuestions": []
+    }
+  ],
+  "experiments": [
+    {
+      "id": "experiment_85cb3f07-30b4-4efb-9471-162aa0211428",
+      "hypothesisId": "hypothesis_6bb62a1a-e396-4eee-a126-094dd1a11951",
+      "prediction": "Raw accuracy exceeds both balanced accuracy and minority recall by at least 10 percentage points.",
+      "method": "accuracy_paradox_v1: fixed supplied predictions; exact equal-class weighting; minimum of the two raw-accuracy gaps.",
+      "seed": 42,
+      "callIds": [
+        "call_9d5e6ecf-03e4-4669-a595-30d9f21cf4db"
+      ],
+      "criterion": {
+        "metric": "accuracy_paradox_gap",
+        "operator": "at_least",
+        "value": 10,
+        "unit": "percentage_points"
+      },
+      "status": "completed",
+      "outcome": "supports",
+      "evidenceIds": [
+        "evidence_84b2a7fe-7b31-41bd-b1bd-f28927f74c95"
+      ],
+      "limitations": [
+        "Descriptive point estimates only; no confidence intervals or causal conclusions.",
+        "PR-AUC uses non-interpolated average precision, not trapezoidal PR area.",
+        "Prediction-based metrics use supplied predictions; no probability threshold is inferred.",
+        "Minority recall refers to the positive class in this evaluation population.",
+        "Exact 50/50 class reweighting preserves within-class outcomes and uses every row. It is not retraining, new observations, or evidence that imbalance caused training failure.",
+        "The seed is retained for replay compatibility but is unused because this experiment has no random sampling.",
+        "The declared gap threshold is a user policy, not a significance test. Rejection applies only to this dataset-specific prediction, not every class-imbalance hypothesis.",
+        "Reported sample sizes count original observations, not synthetic weighted observations. No confidence interval is estimated."
+      ]
+    }
+  ],
+  "repairs": [
+    {
+      "id": "repair_f93fd013-6329-439f-a71a-3d26c98be107",
+      "hypothesisId": "hypothesis_6bb62a1a-e396-4eee-a126-094dd1a11951",
+      "kind": "operating_policy",
+      "verification": "evaluation_data",
+      "datasetId": "dataset_77935102-008c-4147-af24-d08f4672a19b",
+      "policy": {
+        "threshold": 0.4,
+        "positiveLabel": "1",
+        "comparison": "greater_than_or_equal",
+        "costs": null
+      },
+      "criterion": {
+        "metric": "recall",
+        "operator": "at_least",
+        "value": 0.8,
+        "unit": "ratio"
+      },
+      "rationale": "Threshold 0.40 satisfies target recall constraint >= 80.0% (achieving 90.0%) while maximizing operating precision.",
+      "evidenceIds": [
+        "evidence_bc03a6e2-9dd1-4fd0-8846-ce3f3af2deec",
+        "evidence_84b2a7fe-7b31-41bd-b1bd-f28927f74c95"
+      ]
+    }
+  ],
+  "comparisons": [
+    {
+      "id": "comparison_2cc6f71a-3ff0-4769-9c1f-40c74b0003b0",
+      "repairId": "repair_f93fd013-6329-439f-a71a-3d26c98be107",
+      "datasetId": "dataset_77935102-008c-4147-af24-d08f4672a19b",
+      "baselinePolicy": {
+        "threshold": 0.5,
+        "positiveLabel": "1",
+        "comparison": "greater_than_or_equal",
+        "costs": null
+      },
+      "afterPolicy": {
+        "threshold": 0.4,
+        "positiveLabel": "1",
+        "comparison": "greater_than_or_equal",
+        "costs": null
+      },
+      "baselineEvidenceIds": [
+        "evidence_bc03a6e2-9dd1-4fd0-8846-ce3f3af2deec"
+      ],
+      "afterEvidenceIds": [
+        "evidence_468655e4-58d8-4d59-a06b-59404294d68d"
+      ],
+      "criterion": {
+        "metric": "recall",
+        "operator": "at_least",
+        "value": 0.8,
+        "unit": "ratio"
+      },
+      "status": "passed",
+      "limitations": [
+        "Re-evaluation is computed on the identical evaluation rows supplied by the user.",
+        "Threshold policy shifts adjust operating sensitivity without retraining model parameters.",
+        "Does not constitute independent prospective validation on future or external data splits."
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "event_a3de9ac7-8f91-48ca-b6de-a62b8bb38393",
+      "sequence": 1,
+      "at": "2026-10-08T11:15:57.241Z",
+      "kind": "dataset_registered",
+      "entityId": "dataset_77935102-008c-4147-af24-d08f4672a19b",
+      "message": "Dataset 'melanoma-synthetic.csv' (100 rows) registered from source 'melanoma-synthetic.csv'."
+    },
+    {
+      "id": "event_34d1b8cb-b0fd-4d9e-8ad2-4f79d724aac5",
+      "sequence": 2,
+      "at": "2026-10-08T11:15:57.249Z",
+      "kind": "tool_requested",
+      "entityId": "call_3073285a-85e7-425f-af4f-d24cd13a9d62",
+      "message": "Diagnostic tool 'compute_classification_metrics' requested."
+    },
+    {
+      "id": "event_c1999eb5-5029-4c33-8d33-1ddddd3b117d",
+      "sequence": 3,
+      "at": "2026-10-08T11:15:57.249Z",
+      "kind": "tool_completed",
+      "entityId": "result_cc71408e-30bb-4f7b-8cc5-2a316b35bb8d",
+      "message": "Diagnostic tool 'compute_classification_metrics' completed with 1 evidence observation(s)."
+    },
+    {
+      "id": "event_16928632-c40b-45c4-b368-81b0484a1f0d",
+      "sequence": 4,
+      "at": "2026-10-08T11:15:57.250Z",
+      "kind": "hypothesis_updated",
+      "entityId": "hypothesis_6bb62a1a-e396-4eee-a126-094dd1a11951",
+      "message": "Hypothesis 'Class Imbalance Distortion: High raw accuracy conceals severe sensitivity suppression on the minority class due to an uncalibrated default 0.50 decision threshold.' marked as proposed."
+    },
+    {
+      "id": "event_1af71e79-acb7-4de4-a9cf-1260159d8dff",
+      "sequence": 5,
+      "at": "2026-10-08T11:15:57.256Z",
+      "kind": "tool_requested",
+      "entityId": "call_9d5e6ecf-03e4-4669-a595-30d9f21cf4db",
+      "message": "Diagnostic tool 'run_counterfactual_test' requested."
+    },
+    {
+      "id": "event_4f40dc08-1b52-43aa-8a0a-cc6399c6a5bf",
+      "sequence": 6,
+      "at": "2026-10-08T11:15:57.256Z",
+      "kind": "tool_completed",
+      "entityId": "result_31cb2c01-d2fd-4fae-a23d-00f39ce05b6b",
+      "message": "Diagnostic tool 'run_counterfactual_test' completed with 0 evidence observation(s)."
+    },
+    {
+      "id": "event_a829ece9-090c-4cb5-a0e5-8e2f1eed42c3",
+      "sequence": 7,
+      "at": "2026-10-08T11:15:57.257Z",
+      "kind": "experiment_completed",
+      "entityId": "experiment_85cb3f07-30b4-4efb-9471-162aa0211428",
+      "message": "Verification experiment completed with outcome: supports."
+    },
+    {
+      "id": "event_18ca94da-b322-4a00-8f94-1417b495fff5",
+      "sequence": 8,
+      "at": "2026-10-08T11:15:57.257Z",
+      "kind": "hypothesis_updated",
+      "entityId": "hypothesis_6bb62a1a-e396-4eee-a126-094dd1a11951",
+      "message": "Hypothesis 'Class Imbalance Distortion: High raw accuracy conceals severe sensitivity suppression on the minority class due to an uncalibrated default 0.50 decision threshold.' marked as supported."
+    },
+    {
+      "id": "event_18562a39-662d-46bb-a030-d4ddd1a0de25",
+      "sequence": 9,
+      "at": "2026-10-08T11:15:57.285Z",
+      "kind": "tool_requested",
+      "entityId": "call_fc0cee87-3120-4151-8e0b-fe5561558b8c",
+      "message": "Diagnostic tool 'generate_repair_candidate' requested."
+    },
+    {
+      "id": "event_7d7b8ca6-c41b-4efd-a82e-353a3e51a2fe",
+      "sequence": 10,
+      "at": "2026-10-08T11:15:57.285Z",
+      "kind": "tool_completed",
+      "entityId": "result_189b837a-4f4d-4f3c-9403-6df78e741001",
+      "message": "Diagnostic tool 'generate_repair_candidate' completed with 0 evidence observation(s)."
+    },
+    {
+      "id": "event_11b6e30b-3fc2-4474-a8f4-e253efd7e64a",
+      "sequence": 11,
+      "at": "2026-10-08T11:15:57.285Z",
+      "kind": "repair_proposed",
+      "entityId": "repair_f93fd013-6329-439f-a71a-3d26c98be107",
+      "message": "Repair candidate proposed: threshold 0.4 (operating_policy)."
+    },
+    {
+      "id": "event_bc4e5c07-a280-44d3-a0c1-bc3a560af62d",
+      "sequence": 12,
+      "at": "2026-10-08T11:15:57.288Z",
+      "kind": "tool_requested",
+      "entityId": "call_4558e2bd-33db-4202-8d27-dd1a785e9410",
+      "message": "Diagnostic tool 're_evaluate_repair' requested."
+    },
+    {
+      "id": "event_7a67a2b1-7038-4764-80a8-43e978dd9b74",
+      "sequence": 13,
+      "at": "2026-10-08T11:15:57.288Z",
+      "kind": "tool_completed",
+      "entityId": "result_ce4dbc20-f4d0-47c6-9959-ffb5a6898f59",
+      "message": "Diagnostic tool 're_evaluate_repair' completed with 1 evidence observation(s)."
+    },
+    {
+      "id": "event_81d42fe0-b5e2-4572-ab0d-c0253d18025a",
+      "sequence": 14,
+      "at": "2026-10-08T11:15:57.288Z",
+      "kind": "comparison_completed",
+      "entityId": "comparison_2cc6f71a-3ff0-4769-9c1f-40c74b0003b0",
+      "message": "Before-vs-after re-evaluation completed with status: passed."
+    },
+    {
+      "id": "event_d7937169-397a-42d4-ad65-18a0ca465cdd",
+      "sequence": 15,
+      "at": "2026-10-08T11:15:57.289Z",
+      "kind": "investigation_completed",
+      "entityId": "investigation_ff0ef3d0-fd74-4131-9ffc-d986f99efb9f",
+      "message": "Investigation completed with diagnosis: Autonomous investigation verified accuracy paradox distortion via counterfactual reweighting. Re-calibrating the operating threshold from 0.50 to 0.40 recovers sensitivity while preserving balanced accuracy on identical evaluation rows."
+    }
+  ],
+  "diagnosis": {
+    "id": "diagnosis_6c22745c-3e05-4a04-b8ff-8eeccef53300",
+    "investigationId": "investigation_ff0ef3d0-fd74-4131-9ffc-d986f99efb9f",
+    "status": "completed",
+    "summary": "Autonomous investigation verified accuracy paradox distortion via counterfactual reweighting. Re-calibrating the operating threshold from 0.50 to 0.40 recovers sensitivity while preserving balanced accuracy on identical evaluation rows.",
+    "evidenceIds": [
+      "evidence_bc03a6e2-9dd1-4fd0-8846-ce3f3af2deec",
+      "evidence_84b2a7fe-7b31-41bd-b1bd-f28927f74c95",
+      "evidence_468655e4-58d8-4d59-a06b-59404294d68d"
+    ],
+    "hypothesisIds": [
+      "hypothesis_6bb62a1a-e396-4eee-a126-094dd1a11951"
+    ],
+    "primaryHypothesisId": "hypothesis_6bb62a1a-e396-4eee-a126-094dd1a11951",
+    "confidence": {
+      "kind": "evidence_strength",
+      "level": "strong",
+      "rationale": "Empirically validated through deterministic mathematical evaluation without data fabrication or uncalibrated extrapolation."
+    },
+    "experimentIds": [
+      "experiment_85cb3f07-30b4-4efb-9471-162aa0211428"
+    ],
+    "repairIds": [
+      "repair_f93fd013-6329-439f-a71a-3d26c98be107"
+    ],
+    "comparisonIds": [
+      "comparison_2cc6f71a-3ff0-4769-9c1f-40c74b0003b0"
+    ],
+    "unresolvedQuestions": [],
+    "limitations": [
+      "Diagnosis is based strictly on observed evaluation data distribution; ongoing drift monitoring is advised."
+    ]
+  }
+}

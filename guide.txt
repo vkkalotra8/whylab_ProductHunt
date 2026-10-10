@@ -1,0 +1,122 @@
+Complete Practitioner Guide: Investigating Your Own Dataset in WhyLab 2.0
+This step-by-step guide walks you through the entire end-to-end investigation lifecycle in WhyLab 2.0—from preparing and uploading your dataset to discovering hidden failures, optimizing decision thresholds, and exporting a certified PDF report.
+
+Prerequisites: Preparing Your ML Artifacts
+WhyLab 2.0 accepts both single evaluation files and multi-artifact collections up to 2.0 MB per file (CSV, TSV, JSON, JSONL, LOG).
+
+1. Minimal Evaluation Dataset (Single CSV)
+To enable all 10 diagnostic tools and automated threshold repair, your CSV should ideally contain:
+
+Column Concept	Example Name	Purpose	Required?
+Ground Truth	target, actual, y_true, label	True observed outcome (e.g., 1 vs 0, malignant vs benign)	Yes
+Model Prediction	prediction, y_pred, predicted	Discrete decision output produced by your model (1 or 0)	Recommended
+Probability Score	probability, confidence, y_prob	Continuous confidence score between 0.0 and 1.0	Optional (Enables ROC-AUC & Repair Lab)
+Subgroup Slice	site, region, hospital, device	Categorical metadata to detect demographic or environmental bias	Optional (Enables Slice Disparity)
+Features	age, keyword, text, blood_pressure	Input features for proxy correlation and leakage scanning	Optional (Enables Leakage Scanner)
+NOTE
+
+What if you only have labeled data without model predictions? (e.g., Kaggle text datasets like kaggle-disaster-tweets.csv). WhyLab recognizes this automatically. It will not force you to select a fake prediction; it will profile data quality, class balance, and feature correlations. You can then upload a companion predictions file whenever your model outputs are ready.
+
+Step 1: Stage 01 — Ingest & Column Mapping
+Navigate to the Investigation Studio:
+Open /investigate in your browser.
+Upload Your Files:
+Ensure the toggle is set to "Upload Your Dataset".
+Drag and drop your file(s) into the Upload ML Artifacts dropzone, or click browse local files.
+Multi-file support: You can upload multiple artifacts at once (e.g., test_data.csv, model_predictions.csv, training.log).
+Assign Artifact Roles:
+Each file will appear as a structured card showing row/column counts and file size.
+Set the role dropdown (e.g., Evaluation, Model Predictions, Reference Baseline, or Training Epoch Log).
+Configure Column Mapping: In the Column Mapping & Task Configuration grid:
+Ground Truth (Actual): Select your true label column.
+Model Prediction: Select your model’s discrete class output. (If your dataset has no predictions, select -- None (Data Profiling & Quality Only) --).
+Probability Score: Select your continuous score column in [0.0, 1.0] (if available).
+Subgroup Slice: Select a partition column (e.g., site, device, demographic).
+Positive Class Label: Click the pill representing your focal outcome (e.g., 1, malignant, sepsis, fraud).
+Inspect the Sample Data Preview:
+Verify the table columns and data types.
+For long text columns (e.g., tweets, clinical notes), click [+] on any cell to expand the full text inline without breaking table formatting.
+Review the Diagnostics Checklist:
+Check the Detected Evidence Profile. It displays how many tools are ready based on your mapping.
+Step 2: Stage 02 — Profile (Data Health & Baseline Metrics)
+Click 02 Profile in the top stepper or click "Inspect Dataset Profile & Data Quality".
+Review High-Level Metrics:
+Total row counts and feature dimensions.
+Positive class prevalence (e.g., 4.8% minority class prevalence flags severe imbalance).
+Inspect the Column Statistics Table:
+Check distinct counts and missing value percentages for every column.
+Identify columns with high missingness (> 20%) or potential data leakage.
+Decision Point:
+If you mapped both ground truth and model predictions, click "Launch Full Investigation".
+Step 3: Stage 03 — Investigate (Astra Autonomous Loop)
+Launch the Autonomous Investigation:
+Click "Launch Autonomous Investigation".
+The Astra Telemetry Console expands automatically on the right side.
+Monitor Live NDJSON Event Streaming:
+The supervisor will execute up to 16 autonomous rounds, dispatching diagnostic tools:
+profile_dataset → Baseline prevalence and schemas.
+metrics_confusion → Accuracy, Precision, Recall, F1, and Confusion Matrix.
+counterfactual_paradox → Tests if top-line accuracy masks minority recall failure (Accuracy Paradox).
+feature_proxy_leakage → Scans for proxy leakage or correlation anomalies.
+subgroup_slice_evaluation → Measures performance disparities across slice partitions.
+Inject Mid-Turn Steering Directives (Optional):
+While Astra is investigating, you can type domain guidance into the Mid-Turn User Steering Directives box and click Inject:
+Example: "Check calibration and Brier score"
+Example: "Prioritize patient safety and minimize false negatives"
+Astra ingests your directive on the next round without discarding gathered evidence.
+Completion:
+Once all falsifications and hypotheses are finalized, Astra registers the investigation and displays: Investigation Complete & Certified. ID: inv_...
+Step 4: Stage 04 — Verify (Adversarial Falsification)
+Click Open Investigation Workspace (or navigate to /investigations/<id>).
+Review Formulated Hypotheses:
+Click the Hypotheses tab (/investigations/<id>/hypotheses).
+Astra ranks hypotheses into Supported, Rejected, and Weakened.
+Example Finding:
+"Severe False Omission Failure: 94.2% aggregate accuracy masks 22.4% minority class recall under 5% base prevalence."
+
+Inspect Adversarial Verification Experiments:
+See empirical evidence:
+Prevalence Shift Stress Test: Evaluates how model accuracy degrades as class prevalence changes.
+Subgroup Disparity Gap: Discovers if specific sites or demographics suffer disproportionate failure rates (e.g., -100 pp recall gap between Site A and Site B).
+Step 5: Stage 05 — Repair Lab (Deterministic Policy Optimization)
+Instead of requiring expensive model retraining, WhyLab 2.0 optimizes the decision policy deterministically:
+
+Click the Repair Lab tab (/investigations/<id>/repair).
+101-Point Threshold Sensitivity Curve:
+Inspect the interactive threshold sweep chart from 0.00 to 1.00.
+Hover over points to see exact True Positives, False Negatives, Precision, and Recall at every cutoff.
+Configure the Domain Cost Matrix:
+Adjust the penalty weights:
+Cost of False Negative ($FN): High for critical safety/fraud/medical omissions.
+Cost of False Positive ($FP): Cost of manual review or alert fatigue.
+WhyLab deterministically computes the cost-optimal decision threshold (e.g., shifting default 0.50 → 0.19).
+Review Before-vs-After Re-Evaluation:
+Inspect the side-by-side comparison table evaluated on identical test rows:
+Recall: e.g., 22.4% → 84.8% (+62.4 percentage points).
+False Negatives: e.g., 776 → 152 (-624 missed incidents).
+Zero Synthetic Interpolation: Computed strictly on actual dataset rows.
+Export the Decision Policy:
+Click Export Decision Policy to download a production-ready Python or JSON decision rule for deployment into your serving pipeline.
+Step 6: Stage 06 — Report (Certified Incident Report & PDF Export)
+Click the Report tab (/investigations/<id>/report).
+Review Executive Incident Report:
+Diagnosis Summary & Confidence Level: Verified deterministic root cause.
+Cryptographic Attestation: SHA-256 data digest ensuring evidence immutability.
+Multi-Artifact Inventory: Table of all ingested datasets, schemas, and training logs.
+Recommended CI/CD Quality Gates: Automated assertions for production deployment (e.g., assert minority_recall >= 0.80).
+One-Click Direct PDF Download:
+Click the blue Download Certified PDF button at the top right.
+Your browser will immediately download a publication-grade vector PDF document (whylab-incident-report-<id>.pdf) with high-contrast tables, metric cards, and attestation seals ready for executive review or compliance audits.
+Summary of the Investigation Workflow
+text
+[01 Ingest]       Upload CSV/TSV/JSON/LOG  --> Map Target, Predictions, Slices
+      ↓
+[02 Profile]      Inspect Missingness & Class Distribution
+      ↓
+[03 Investigate]  Astra Autonomous Tool Loop + User Steering Directives
+      ↓
+[04 Verify]       Hypothesis Ranking & Falsification Experiments
+      ↓
+[05 Repair]       101-Point Threshold Sweep + Domain Cost Matrix Optimization
+      ↓
+[06 Report]       Cryptographically Attested Audit + Download Certified PDF

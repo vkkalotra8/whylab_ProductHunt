@@ -1,0 +1,344 @@
+{
+  "schemaVersion": 2,
+  "id": "investigation_000ed8dc-6230-4b88-a69b-4e81c64b68cc",
+  "objective": "Investigate reliability risks and performance degradation on melanoma-synthetic.csv.",
+  "status": "completed",
+  "stopReason": null,
+  "createdAt": "2026-10-08T20:12:52.087Z",
+  "updatedAt": "2026-10-08T20:12:52.088Z",
+  "sources": [
+    {
+      "id": "source_bcab78b3-5443-403e-9199-af2115a52416",
+      "kind": "uploaded_file",
+      "name": "melanoma-synthetic.csv",
+      "capturedAt": "2026-10-08T20:12:52.087Z",
+      "contentDigest": null
+    }
+  ],
+  "datasets": [
+    {
+      "id": "dataset_e77c9f50-0c72-4df7-956c-7d0f91f73a76",
+      "sourceId": "source_bcab78b3-5443-403e-9199-af2115a52416",
+      "name": "melanoma-synthetic.csv",
+      "rowCount": 100,
+      "columns": [
+        "y_true",
+        "y_pred",
+        "y_probability"
+      ],
+      "role": "evaluation",
+      "task": "binary_classification",
+      "targetColumn": "y_true",
+      "predictionColumn": "y_pred",
+      "probabilityColumn": "y_probability",
+      "positiveLabel": "1"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "evidence_5daeebd4-0c50-4dfb-98d2-8fb85c86354e",
+      "kind": "measurement",
+      "description": "Baseline classification metrics evaluated on melanoma-synthetic.csv: sample size 100.",
+      "measurements": [
+        {
+          "name": "accuracy",
+          "status": "measured",
+          "value": 0.92,
+          "unit": "ratio",
+          "sampleSize": 100
+        },
+        {
+          "name": "precision",
+          "status": "measured",
+          "value": 1,
+          "unit": "ratio",
+          "sampleSize": 100
+        },
+        {
+          "name": "recall",
+          "status": "measured",
+          "value": 0.2,
+          "unit": "ratio",
+          "sampleSize": 100
+        },
+        {
+          "name": "specificity",
+          "status": "measured",
+          "value": 1,
+          "unit": "ratio",
+          "sampleSize": 100
+        },
+        {
+          "name": "f1",
+          "status": "measured",
+          "value": 0.3333333333333333,
+          "unit": "ratio",
+          "sampleSize": 100
+        },
+        {
+          "name": "positive_prevalence",
+          "status": "measured",
+          "value": 0.1,
+          "unit": "ratio",
+          "sampleSize": 100
+        },
+        {
+          "name": "negative_prevalence",
+          "status": "measured",
+          "value": 0.9,
+          "unit": "ratio",
+          "sampleSize": 100
+        },
+        {
+          "name": "balanced_accuracy",
+          "status": "measured",
+          "value": 0.6,
+          "unit": "ratio",
+          "sampleSize": 100
+        },
+        {
+          "name": "minority_recall",
+          "status": "measured",
+          "value": 0.2,
+          "unit": "ratio",
+          "sampleSize": 100
+        },
+        {
+          "name": "roc_auc",
+          "status": "measured",
+          "value": 0.9955555555555556,
+          "unit": "ratio",
+          "sampleSize": 100
+        },
+        {
+          "name": "pr_auc_average_precision",
+          "status": "measured",
+          "value": 0.9714285714285713,
+          "unit": "ratio",
+          "sampleSize": 100
+        }
+      ],
+      "provenance": {
+        "kind": "tool_result",
+        "resultId": "result_ea27f6b1-617e-46c1-ad32-94e891aa9529"
+      }
+    }
+  ],
+  "toolCalls": [
+    {
+      "id": "call_b801a464-5cac-4390-9043-0ebddb8df6aa",
+      "investigationId": "investigation_000ed8dc-6230-4b88-a69b-4e81c64b68cc",
+      "tool": "compute_classification_metrics",
+      "toolVersion": 1,
+      "requestedAt": "2026-10-08T20:12:52.087Z",
+      "input": {
+        "datasetId": "dataset_e77c9f50-0c72-4df7-956c-7d0f91f73a76",
+        "positiveLabel": "1"
+      }
+    }
+  ],
+  "toolResults": [
+    {
+      "id": "result_ea27f6b1-617e-46c1-ad32-94e891aa9529",
+      "callId": "call_b801a464-5cac-4390-9043-0ebddb8df6aa",
+      "tool": "compute_classification_metrics",
+      "toolVersion": 1,
+      "completedAt": "2026-10-08T20:12:52.087Z",
+      "datasetIds": [
+        "dataset_e77c9f50-0c72-4df7-956c-7d0f91f73a76"
+      ],
+      "evidenceIds": [
+        "evidence_5daeebd4-0c50-4dfb-98d2-8fb85c86354e"
+      ],
+      "limitations": [
+        "Descriptive point estimates only; no confidence intervals or causal conclusions.",
+        "PR-AUC uses non-interpolated average precision, not trapezoidal PR area.",
+        "Prediction-based metrics use supplied predictions; no probability threshold is inferred.",
+        "Minority recall refers to the positive class in this evaluation population."
+      ],
+      "status": "completed",
+      "output": {
+        "positiveLabel": "1",
+        "negativeLabel": "0",
+        "sampleSize": 100,
+        "confusion": {
+          "truePositive": 2,
+          "falsePositive": 0,
+          "trueNegative": 90,
+          "falseNegative": 8
+        },
+        "metrics": [
+          {
+            "name": "accuracy",
+            "status": "measured",
+            "value": 0.92,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "precision",
+            "status": "measured",
+            "value": 1,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "recall",
+            "status": "measured",
+            "value": 0.2,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "specificity",
+            "status": "measured",
+            "value": 1,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "f1",
+            "status": "measured",
+            "value": 0.3333333333333333,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "positive_prevalence",
+            "status": "measured",
+            "value": 0.1,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "negative_prevalence",
+            "status": "measured",
+            "value": 0.9,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "balanced_accuracy",
+            "status": "measured",
+            "value": 0.6,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "minority_recall",
+            "status": "measured",
+            "value": 0.2,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "roc_auc",
+            "status": "measured",
+            "value": 0.9955555555555556,
+            "unit": "ratio",
+            "sampleSize": 100
+          },
+          {
+            "name": "pr_auc_average_precision",
+            "status": "measured",
+            "value": 0.9714285714285713,
+            "unit": "ratio",
+            "sampleSize": 100
+          }
+        ]
+      }
+    }
+  ],
+  "hypotheses": [
+    {
+      "id": "hypothesis_14865863-bee1-421e-94f9-ed754777472a",
+      "statement": "Class Imbalance Distortion: High raw accuracy conceals severe sensitivity suppression on the minority class due to an uncalibrated default 0.50 decision threshold.",
+      "status": "proposed",
+      "confidence": {
+        "kind": "evidence_strength",
+        "level": "limited",
+        "rationale": "Baseline metrics demonstrate strong tension between overall accuracy (92.0%) and minority class recall (20.0%), suggesting majority class domination under 10.0% prevalence."
+      },
+      "evidence": [
+        {
+          "evidenceId": "evidence_5daeebd4-0c50-4dfb-98d2-8fb85c86354e",
+          "relationship": "supports",
+          "rationale": "Baseline metrics demonstrate strong tension between overall accuracy (92.0%) and minority class recall (20.0%), suggesting majority class domination under 10.0% prevalence."
+        }
+      ],
+      "unresolvedQuestions": []
+    }
+  ],
+  "experiments": [],
+  "repairs": [],
+  "comparisons": [],
+  "events": [
+    {
+      "id": "event_c8a35fe2-adfd-4a8e-a15a-796b09ceb315",
+      "sequence": 1,
+      "at": "2026-10-08T20:12:52.087Z",
+      "kind": "dataset_registered",
+      "entityId": "dataset_e77c9f50-0c72-4df7-956c-7d0f91f73a76",
+      "message": "Dataset 'melanoma-synthetic.csv' (100 rows) registered from source 'melanoma-synthetic.csv'."
+    },
+    {
+      "id": "event_f71303ed-426e-4256-807c-1db6e4f7ef40",
+      "sequence": 2,
+      "at": "2026-10-08T20:12:52.087Z",
+      "kind": "tool_requested",
+      "entityId": "call_b801a464-5cac-4390-9043-0ebddb8df6aa",
+      "message": "Diagnostic tool 'compute_classification_metrics' requested."
+    },
+    {
+      "id": "event_23eefac0-fb8b-422e-961f-3b6c1105b310",
+      "sequence": 3,
+      "at": "2026-10-08T20:12:52.087Z",
+      "kind": "tool_completed",
+      "entityId": "result_ea27f6b1-617e-46c1-ad32-94e891aa9529",
+      "message": "Diagnostic tool 'compute_classification_metrics' completed with 1 evidence observation(s)."
+    },
+    {
+      "id": "event_74d2dd1e-3d5c-48a7-975c-f55e66f59d18",
+      "sequence": 4,
+      "at": "2026-10-08T20:12:52.087Z",
+      "kind": "hypothesis_updated",
+      "entityId": "hypothesis_14865863-bee1-421e-94f9-ed754777472a",
+      "message": "Hypothesis 'Class Imbalance Distortion: High raw accuracy conceals severe sensitivity suppression on the minority class due to an uncalibrated default 0.50 decision threshold.' marked as proposed."
+    },
+    {
+      "id": "event_5cc5ece0-0374-4faf-8e5d-e23c98970479",
+      "sequence": 5,
+      "at": "2026-10-08T20:12:52.088Z",
+      "kind": "investigation_completed",
+      "entityId": "investigation_000ed8dc-6230-4b88-a69b-4e81c64b68cc",
+      "message": "Investigation completed with diagnosis: Autonomous investigation reached round limit before confirming final diagnosis."
+    }
+  ],
+  "diagnosis": {
+    "id": "diagnosis_f82b25a4-f34c-4d6d-bb30-cb4212cc6f90",
+    "investigationId": "investigation_000ed8dc-6230-4b88-a69b-4e81c64b68cc",
+    "status": "inconclusive",
+    "summary": "Autonomous investigation reached round limit before confirming final diagnosis.",
+    "evidenceIds": [
+      "evidence_5daeebd4-0c50-4dfb-98d2-8fb85c86354e"
+    ],
+    "hypothesisIds": [
+      "hypothesis_14865863-bee1-421e-94f9-ed754777472a"
+    ],
+    "primaryHypothesisId": "hypothesis_14865863-bee1-421e-94f9-ed754777472a",
+    "confidence": {
+      "kind": "evidence_strength",
+      "level": "limited",
+      "rationale": "Investigation stopped at round limit."
+    },
+    "experimentIds": [],
+    "repairIds": [],
+    "comparisonIds": [],
+    "unresolvedQuestions": [
+      "Additional diagnostic runs required."
+    ],
+    "limitations": [
+      "Incomplete investigation cycle."
+    ]
+  }
+}

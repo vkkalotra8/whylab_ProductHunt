@@ -1,0 +1,1482 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R 5 0 R] /Count 2 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Contents 4 0 R /Resources << /Font << /F1 7 0 R /F2 8 0 R /F3 9 0 R /F4 10 0 R >> /ProcSet [/PDF /Text /ImageB /ImageC /ImageI] >> >>
+endobj
+4 0 obj
+<< /Length 9314 >>
+stream
+BT
+/F2 9 Tf
+0.120 0.230 0.540 rg
+1 0 0 1 40.00 786.89 Tm
+(WhyLab 2.0 Incident Attestation) Tj
+ET
+0.7 w
+0.930 0.990 0.960 rg
+0.020 0.590 0.410 RG
+475.28 783.89 64.00 15.00 re
+B
+BT
+/F2 7.5 Tf
+0.020 0.590 0.410 rg
+1 0 0 1 481.28 787.89 Tm
+(REMEDIATED) Tj
+ET
+BT
+/F2 17 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 40.00 768.89 Tm
+(ML Reliability Diagnostic & Incident Report) Tj
+ET
+BT
+/F1 8.5 Tf
+0.390 0.450 0.550 rg
+1 0 0 1 40.00 754.89 Tm
+(Investigation ID: investigation_289fdb4e-3e4b-43d4-a2be-fce96bb1662d     Report ID: rep_investigation_289fdb4e-3e4b-43d4-a2be-fce96bb1662d     Generated: 9/10/2026, 1:42:27 am) Tj
+ET
+1 w
+0.850 0.880 0.920 RG
+40.00 740.89 m
+555.28 740.89 l
+S
+1 w
+0.010 0.520 0.780 rg
+40.00 721.89 3.00 16.00 re
+f
+BT
+/F2 12 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 48.00 725.89 Tm
+(1. System & Dataset Overview) Tj
+ET
+0.7 w
+0.990 0.950 0.950 rg
+0.860 0.150 0.150 RG
+254.00 722.89 53.60 15.00 re
+B
+BT
+/F2 7.5 Tf
+0.860 0.150 0.150 rg
+1 0 0 1 260.00 726.89 Tm
+(CRITICAL) Tj
+ET
+0.7 w
+0.850 0.880 0.920 RG
+40.00 717.89 m
+555.28 717.89 l
+S
+0.7 w
+0.950 0.960 0.980 rg
+0.850 0.880 0.920 RG
+40.00 688.89 515.28 20.00 re
+B
+BT
+/F2 8.5 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 46.00 695.89 Tm
+(Attribute) Tj
+ET
+BT
+/F2 8.5 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 206.00 695.89 Tm
+(Deterministic Value) Tj
+ET
+0.5 w
+1.000 1.000 1.000 rg
+0.850 0.880 0.920 RG
+40.00 669.89 515.28 19.00 re
+B
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 46.00 683.89 Tm
+(System / Model Under Test) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 206.00 683.89 Tm
+(kaggle_icu_sepsis_benchmark ML Reliability Investigation) Tj
+ET
+0.5 w
+0.970 0.980 0.990 rg
+0.850 0.880 0.920 RG
+40.00 650.89 515.28 19.00 re
+B
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 46.00 664.89 Tm
+(Evaluation Dataset) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 206.00 664.89 Tm
+(kaggle_icu_sepsis_benchmark.csv \(n = 1,000 rows\)) Tj
+ET
+0.5 w
+1.000 1.000 1.000 rg
+0.850 0.880 0.920 RG
+40.00 631.89 515.28 19.00 re
+B
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 46.00 645.89 Tm
+(Cohort Prevalence) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 206.00 645.89 Tm
+(Binary classification cohort) Tj
+ET
+0.5 w
+0.970 0.980 0.990 rg
+0.850 0.880 0.920 RG
+40.00 612.89 515.28 19.00 re
+B
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 46.00 626.89 Tm
+(Incident Severity) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 206.00 626.89 Tm
+(CRITICAL   High False-Negative Impact) Tj
+ET
+0.5 w
+1.000 1.000 1.000 rg
+0.850 0.880 0.920 RG
+40.00 593.89 515.28 19.00 re
+B
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 46.00 607.89 Tm
+(Resolution Status) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 206.00 607.89 Tm
+(VERIFIED \(Repair re-evaluated on identical rows\)) Tj
+ET
+0.5 w
+0.970 0.980 0.990 rg
+0.850 0.880 0.920 RG
+40.00 564.89 515.28 29.00 re
+B
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 46.00 588.89 Tm
+(Primary Failure Mode) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 206.00 588.89 Tm
+(Class Imbalance Distortion: High raw accuracy conceals severe sensitivity suppression on) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 206.00 578.89 Tm
+(the minority class due to an uncalibrated default 0.50 decision threshold.) Tj
+ET
+1 w
+0.970 0.980 0.990 rg
+0.010 0.520 0.780 RG
+40.00 493.89 515.28 62.00 re
+B
+BT
+/F2 9 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 52.00 542.89 Tm
+(Executive Incident Summary:) Tj
+ET
+BT
+/F1 8.5 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 52.00 529.89 Tm
+(Autonomous investigation verified accuracy paradox distortion via counterfactual reweighting. Re-calibrating the) Tj
+ET
+BT
+/F1 8.5 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 52.00 517.89 Tm
+(operating threshold from 0.50 to 0.22 recovers sensitivity while preserving balanced accuracy on identical evaluation) Tj
+ET
+BT
+/F1 8.5 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 52.00 505.89 Tm
+(rows.) Tj
+ET
+1 w
+0.010 0.520 0.780 rg
+40.00 473.89 3.00 16.00 re
+f
+BT
+/F2 12 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 48.00 477.89 Tm
+(1b. Multi-Artifact Evidence Inventory) Tj
+ET
+0.7 w
+0.940 0.980 1.000 rg
+0.010 0.520 0.780 RG
+317.00 474.89 95.20 15.00 re
+B
+BT
+/F2 7.5 Tf
+0.010 0.520 0.780 rg
+1 0 0 1 323.00 478.89 Tm
+(1 Files Attached) Tj
+ET
+0.7 w
+0.850 0.880 0.920 RG
+40.00 469.89 m
+555.28 469.89 l
+S
+0.7 w
+0.950 0.960 0.980 rg
+0.850 0.880 0.920 RG
+40.00 440.89 515.28 20.00 re
+B
+BT
+/F2 8.5 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 46.00 447.89 Tm
+(Artifact File) Tj
+ET
+BT
+/F2 8.5 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 226.00 447.89 Tm
+(Inferred ML Role) Tj
+ET
+BT
+/F2 8.5 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 366.00 447.89 Tm
+(Format) Tj
+ET
+BT
+/F2 8.5 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 441.00 447.89 Tm
+(Schema Status) Tj
+ET
+0.5 w
+1.000 1.000 1.000 rg
+0.850 0.880 0.920 RG
+40.00 421.89 515.28 19.00 re
+B
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 46.00 435.89 Tm
+(kaggle_icu_sepsis_benchmark.csv) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 226.00 435.89 Tm
+(EVALUATION) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 366.00 435.89 Tm
+(CSV) Tj
+ET
+0.7 w
+0.930 0.990 0.960 rg
+0.020 0.590 0.410 RG
+441.00 425.89 38.00 15.00 re
+B
+BT
+/F2 7.5 Tf
+0.020 0.590 0.410 rg
+1 0 0 1 447.00 429.89 Tm
+(VALID) Tj
+ET
+1 w
+0.010 0.520 0.780 rg
+40.00 408.89 3.00 16.00 re
+f
+BT
+/F2 12 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 48.00 412.89 Tm
+(2. Multi-Dimensional Reliability Assessment) Tj
+ET
+0.7 w
+0.850 0.880 0.920 RG
+40.00 404.89 m
+555.28 404.89 l
+S
+0.7 w
+0.950 0.960 0.980 rg
+0.850 0.880 0.920 RG
+40.00 375.89 515.28 20.00 re
+B
+BT
+/F2 8.5 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 46.00 382.89 Tm
+(Dimension) Tj
+ET
+BT
+/F2 8.5 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 181.00 382.89 Tm
+(Status) Tj
+ET
+BT
+/F2 8.5 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 256.00 382.89 Tm
+(Score) Tj
+ET
+BT
+/F2 8.5 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 306.00 382.89 Tm
+(Findings & Operational Impact) Tj
+ET
+0.5 w
+1.000 1.000 1.000 rg
+0.850 0.880 0.920 RG
+40.00 356.89 515.28 19.00 re
+B
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 46.00 370.89 Tm
+(Performance & Discrimination) Tj
+ET
+0.7 w
+1.000 0.980 0.920 rg
+0.710 0.330 0.040 RG
+181.00 360.89 48.40 15.00 re
+B
+BT
+/F2 7.5 Tf
+0.710 0.330 0.040 rg
+1 0 0 1 187.00 364.89 Tm
+(WARNING) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 256.00 370.89 Tm
+(61/100) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 306.00 370.89 Tm
+(Moderate discrimination disparity: balanced accuracy is 61%.) Tj
+ET
+0.5 w
+0.970 0.980 0.990 rg
+0.850 0.880 0.920 RG
+40.00 327.89 515.28 29.00 re
+B
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 46.00 351.89 Tm
+(Minority Class Robustness) Tj
+ET
+0.7 w
+0.990 0.950 0.950 rg
+0.860 0.150 0.150 RG
+181.00 336.89 53.60 15.00 re
+B
+BT
+/F2 7.5 Tf
+0.860 0.150 0.150 rg
+1 0 0 1 187.00 340.89 Tm
+(CRITICAL) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 256.00 351.89 Tm
+(26/100) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 306.00 351.89 Tm
+(Severe Accuracy Paradox: 90% raw accuracy masks low 26%) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 306.00 341.89 Tm
+(minority recall.) Tj
+ET
+0.5 w
+1.000 1.000 1.000 rg
+0.850 0.880 0.920 RG
+40.00 298.89 515.28 29.00 re
+B
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 46.00 322.89 Tm
+(Calibration & Confidence) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 46.00 312.89 Tm
+(Reliability) Tj
+ET
+0.7 w
+0.950 0.960 0.980 rg
+0.390 0.450 0.550 RG
+181.00 307.89 64.00 15.00 re
+B
+BT
+/F2 7.5 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 187.00 311.89 Tm
+(UNASSESSED) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 256.00 322.89 Tm
+(N/A) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 306.00 322.89 Tm
+(Calibration analysis unassessed.) Tj
+ET
+0.5 w
+0.970 0.980 0.990 rg
+0.850 0.880 0.920 RG
+40.00 279.89 515.28 19.00 re
+B
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 46.00 293.89 Tm
+(Data Integrity & Feature Leakage) Tj
+ET
+0.7 w
+0.950 0.960 0.980 rg
+0.390 0.450 0.550 RG
+181.00 283.89 64.00 15.00 re
+B
+BT
+/F2 7.5 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 187.00 287.89 Tm
+(UNASSESSED) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 256.00 293.89 Tm
+(N/A) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 306.00 293.89 Tm
+(Leakage scanner unassessed.) Tj
+ET
+0.5 w
+1.000 1.000 1.000 rg
+0.850 0.880 0.920 RG
+40.00 260.89 515.28 19.00 re
+B
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 46.00 274.89 Tm
+(Subgroup & Slice Fairness) Tj
+ET
+0.7 w
+0.950 0.960 0.980 rg
+0.390 0.450 0.550 RG
+181.00 264.89 64.00 15.00 re
+B
+BT
+/F2 7.5 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 187.00 268.89 Tm
+(UNASSESSED) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 256.00 274.89 Tm
+(N/A) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 306.00 274.89 Tm
+(Slice evaluation unassessed.) Tj
+ET
+0.5 w
+0.970 0.980 0.990 rg
+0.850 0.880 0.920 RG
+40.00 241.89 515.28 19.00 re
+B
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 46.00 255.89 Tm
+(Distribution Stability & Drift) Tj
+ET
+0.7 w
+0.950 0.960 0.980 rg
+0.390 0.450 0.550 RG
+181.00 245.89 64.00 15.00 re
+B
+BT
+/F2 7.5 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 187.00 249.89 Tm
+(UNASSESSED) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 256.00 255.89 Tm
+(N/A) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 306.00 255.89 Tm
+(Drift tests unassessed.) Tj
+ET
+0.7 w
+0.85 0.88 0.92 RG
+40 813.89 m
+555.28 813.89 l
+S
+BT
+/F2 7.5 Tf
+0.12 0.23 0.54 rg
+1 0 0 1 40 819.89 Tm
+(WhyLab 2.0     ML Reliability Incident & Diagnostic Report) Tj
+ET
+BT
+/F1 7.5 Tf
+0.39 0.45 0.55 rg
+1 0 0 1 425.28 819.89 Tm
+(Certified Deterministic Evidence) Tj
+ET
+0.7 w
+0.85 0.88 0.92 RG
+40 32 m
+555.28 32 l
+S
+BT
+/F1 7.5 Tf
+0.39 0.45 0.55 rg
+1 0 0 1 40 22 Tm
+(WhyLab AI Reliability Systems   Machine Learning Verification Platform) Tj
+ET
+BT
+/F2 7.5 Tf
+0.2 0.25 0.33 rg
+1 0 0 1 495.28 22 Tm
+(Page 1 of 2) Tj
+ET
+
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Contents 6 0 R /Resources << /Font << /F1 7 0 R /F2 8 0 R /F3 9 0 R /F4 10 0 R >> /ProcSet [/PDF /Text /ImageB /ImageC /ImageI] >> >>
+endobj
+6 0 obj
+<< /Length 12831 >>
+stream
+1 w
+0.010 0.520 0.780 rg
+40.00 782.89 3.00 16.00 re
+f
+BT
+/F2 12 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 48.00 786.89 Tm
+(3. Deterministic Evidence & Metrics Proof) Tj
+ET
+0.7 w
+0.940 0.980 1.000 rg
+0.010 0.520 0.780 RG
+345.00 783.89 69.20 15.00 re
+B
+BT
+/F2 7.5 Tf
+0.010 0.520 0.780 rg
+1 0 0 1 351.00 787.89 Tm
+(3 Artifacts) Tj
+ET
+0.7 w
+0.850 0.880 0.920 RG
+40.00 778.89 m
+555.28 778.89 l
+S
+0.7 w
+0.950 0.960 0.980 rg
+0.850 0.880 0.920 RG
+40.00 749.89 515.28 20.00 re
+B
+BT
+/F2 8.5 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 46.00 756.89 Tm
+(Evidence ID) Tj
+ET
+BT
+/F2 8.5 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 156.00 756.89 Tm
+(Diagnostic Observation) Tj
+ET
+BT
+/F2 8.5 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 351.00 756.89 Tm
+(Verified Measurements) Tj
+ET
+0.5 w
+1.000 1.000 1.000 rg
+0.850 0.880 0.920 RG
+40.00 710.89 515.28 39.00 re
+B
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 46.00 744.89 Tm
+(evidence_ea919f03-4ad5-4a) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 46.00 734.89 Tm
+(5a-9cbf-b6f7ece0424c) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 156.00 744.89 Tm
+(Baseline classification metrics evaluated on) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 156.00 734.89 Tm
+(kaggle_icu_sepsis_benchmark.csv: sample size) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 156.00 724.89 Tm
+(1000.) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 351.00 744.89 Tm
+(accuracy: 90.0%, precision: 37.3%, recall: 25.9%,) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 351.00 734.89 Tm
+(specificity: 96.0%, f1: 30.6%, positive_prevalence:) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 351.00 724.89 Tm
+(8.5%) Tj
+ET
+0.5 w
+0.970 0.980 0.990 rg
+0.850 0.880 0.920 RG
+40.00 631.89 515.28 79.00 re
+B
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 46.00 705.89 Tm
+(evidence_63507a12-4fd2-40) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 46.00 695.89 Tm
+(3b-b2a4-304f3895490a) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 156.00 705.89 Tm
+(At the declared 10 percentage-point threshold,) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 156.00 695.89 Tm
+(raw accuracy exceeds balanced accuracy by) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 156.00 685.89 Tm
+(29.08068145290903 points and minority recall by) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 156.00 675.89 Tm
+(64.11764705882352 points. Both passing supports) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 156.00 665.89 Tm
+(the prediction; one passing weakens it; neither) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 156.00 655.89 Tm
+(passing rejects this threshold-specific) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 156.00 645.89 Tm
+(prediction on this dataset.) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 351.00 705.89 Tm
+(equal_class_weight_accuracy: 60.9%,) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 351.00 695.89 Tm
+(accuracy_minus_balanced_accuracy: 29.08,) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 351.00 685.89 Tm
+(accuracy_minus_minority_recall: 64.12,) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 351.00 675.89 Tm
+(accuracy_paradox_gap: 29.08) Tj
+ET
+0.5 w
+1.000 1.000 1.000 rg
+0.850 0.880 0.920 RG
+40.00 572.89 515.28 59.00 re
+B
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 46.00 626.89 Tm
+(evidence_09643061-6e3a-41) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 46.00 616.89 Tm
+(48-bd8b-a0e1ad8b9af7) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 156.00 626.89 Tm
+(Threshold adjustment from 0.50 to 0.22 shifted) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 156.00 616.89 Tm
+(recall from 25.9% to 89.4% and accuracy from) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 156.00 606.89 Tm
+(90.0% to 67.8%. False negatives changed by -54,) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 156.00 596.89 Tm
+(false positives changed by +276. Criterion) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 156.00 586.89 Tm
+('recall at_least 0.8' was satisfied.) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 351.00 626.89 Tm
+(accuracy: 67.8%, precision: 19.5%, recall: 89.4%,) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 351.00 616.89 Tm
+(specificity: 65.8%, f1: 32.1%, positive_prevalence:) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 351.00 606.89 Tm
+(8.5%) Tj
+ET
+1 w
+0.010 0.520 0.780 rg
+40.00 559.89 3.00 16.00 re
+f
+BT
+/F2 12 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 48.00 563.89 Tm
+(4. Falsification Battery & Rival Hypotheses) Tj
+ET
+0.7 w
+0.940 0.980 1.000 rg
+0.010 0.520 0.780 RG
+359.00 560.89 74.40 15.00 re
+B
+BT
+/F2 7.5 Tf
+0.010 0.520 0.780 rg
+1 0 0 1 365.00 564.89 Tm
+(1 Hypotheses) Tj
+ET
+0.7 w
+0.850 0.880 0.920 RG
+40.00 555.89 m
+555.28 555.89 l
+S
+0.7 w
+0.950 0.960 0.980 rg
+0.850 0.880 0.920 RG
+40.00 526.89 515.28 20.00 re
+B
+BT
+/F2 8.5 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 46.00 533.89 Tm
+(Hypothesis ID) Tj
+ET
+BT
+/F2 8.5 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 131.00 533.89 Tm
+(Formal Rival Statement) Tj
+ET
+BT
+/F2 8.5 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 316.00 533.89 Tm
+(Verdict) Tj
+ET
+BT
+/F2 8.5 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 391.00 533.89 Tm
+(Mathematical Provenance) Tj
+ET
+0.5 w
+1.000 1.000 1.000 rg
+0.850 0.880 0.920 RG
+40.00 477.89 515.28 49.00 re
+B
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 46.00 521.89 Tm
+(hypothesis_dfdf606c) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 46.00 511.89 Tm
+(-02c1-4a30-b42e-a7a) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 46.00 501.89 Tm
+(442bf20ef) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 131.00 521.89 Tm
+(Class Imbalance Distortion: High raw accuracy) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 131.00 511.89 Tm
+(conceals severe sensitivity suppression on) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 131.00 501.89 Tm
+(the minority class due to an uncalibrated) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 131.00 491.89 Tm
+(default 0.50 decision threshold.) Tj
+ET
+0.7 w
+0.990 0.950 0.950 rg
+0.860 0.150 0.150 RG
+316.00 496.89 58.80 15.00 re
+B
+BT
+/F2 7.5 Tf
+0.860 0.150 0.150 rg
+1 0 0 1 322.00 500.89 Tm
+(SUPPORTED) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 391.00 521.89 Tm
+(Raw accuracy exceeds both balanced) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 391.00 511.89 Tm
+(accuracy and minority recall by at least) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 391.00 501.89 Tm
+(10 percentage points.) Tj
+ET
+1 w
+0.010 0.520 0.780 rg
+40.00 464.89 3.00 16.00 re
+f
+BT
+/F2 12 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 48.00 468.89 Tm
+(5. Remediation Lab & Policy Optimization) Tj
+ET
+0.7 w
+0.930 0.990 0.960 rg
+0.020 0.590 0.410 RG
+338.00 465.89 79.60 15.00 re
+B
+BT
+/F2 7.5 Tf
+0.020 0.590 0.410 rg
+1 0 0 1 344.00 469.89 Tm
+(Verified Lift) Tj
+ET
+0.7 w
+0.850 0.880 0.920 RG
+40.00 460.89 m
+555.28 460.89 l
+S
+BT
+/F2 9 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 40.00 451.89 Tm
+(Repair Policy: Decision threshold recalibrated from standard 0.50 to optimal 0.22.) Tj
+ET
+0.7 w
+0.950 0.960 0.980 rg
+0.850 0.880 0.920 RG
+40.00 413.89 515.28 20.00 re
+B
+BT
+/F2 8.5 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 46.00 420.89 Tm
+(Metric) Tj
+ET
+BT
+/F2 8.5 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 181.00 420.89 Tm
+(Baseline \(0.50\)) Tj
+ET
+BT
+/F2 8.5 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 256.00 420.89 Tm
+(Repaired Policy) Tj
+ET
+BT
+/F2 8.5 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 331.00 420.89 Tm
+(Delta) Tj
+ET
+BT
+/F2 8.5 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 391.00 420.89 Tm
+(Clinical / Operational Impact) Tj
+ET
+0.5 w
+1.000 1.000 1.000 rg
+0.850 0.880 0.920 RG
+40.00 384.89 515.28 29.00 re
+B
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 46.00 408.89 Tm
+(1 Class Recall \(Sensitivity\)) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 181.00 408.89 Tm
+(25.9%) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 256.00 408.89 Tm
+(89.4%) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 331.00 408.89 Tm
+(+63.5 pp) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 391.00 408.89 Tm
+(Lifts 1 detection rate while bounding) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 391.00 398.89 Tm
+(false positives) Tj
+ET
+0.5 w
+0.970 0.980 0.990 rg
+0.850 0.880 0.920 RG
+40.00 345.89 515.28 39.00 re
+B
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 46.00 379.89 Tm
+(Missed 1 Cases) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 181.00 379.89 Tm
+(High FN count at) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 181.00 369.89 Tm
+(threshold = 0.50) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 256.00 379.89 Tm
+(Reduced FN count) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 256.00 369.89 Tm
+(at threshold =) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 256.00 359.89 Tm
+(0.22) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 331.00 379.89 Tm
+(Optimized) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 331.00 369.89 Tm
+(cutoff) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 391.00 379.89 Tm
+(Substantially reduces minority false) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 391.00 369.89 Tm
+(omissions) Tj
+ET
+0.5 w
+1.000 1.000 1.000 rg
+0.850 0.880 0.920 RG
+40.00 316.89 515.28 29.00 re
+B
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 46.00 340.89 Tm
+(Balanced Accuracy) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 181.00 340.89 Tm
+(60.9%) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 256.00 340.89 Tm
+(77.6%) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 331.00 340.89 Tm
+(+16.7 pp) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 391.00 340.89 Tm
+(Restores model from near-random chance to) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 391.00 330.89 Tm
+(balanced detector) Tj
+ET
+0.5 w
+0.970 0.980 0.990 rg
+0.850 0.880 0.920 RG
+40.00 287.89 515.28 29.00 re
+B
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 46.00 311.89 Tm
+(Raw Overall Accuracy) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 181.00 311.89 Tm
+(90.0%) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 256.00 311.89 Tm
+(67.8%) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 331.00 311.89 Tm
+(-22.2 pp) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 391.00 311.89 Tm
+(Adjusts operating threshold to prioritize) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 391.00 301.89 Tm
+(critical class detection) Tj
+ET
+1 w
+0.010 0.520 0.780 rg
+40.00 274.89 3.00 16.00 re
+f
+BT
+/F2 12 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 48.00 278.89 Tm
+(6. Automated CI/CD Reliability Protection Gates) Tj
+ET
+0.7 w
+0.940 0.980 1.000 rg
+0.010 0.520 0.780 RG
+387.00 275.89 53.60 15.00 re
+B
+BT
+/F2 7.5 Tf
+0.010 0.520 0.780 rg
+1 0 0 1 393.00 279.89 Tm
+(Enforced) Tj
+ET
+0.7 w
+0.850 0.880 0.920 RG
+40.00 270.89 m
+555.28 270.89 l
+S
+0.7 w
+0.950 0.960 0.980 rg
+0.850 0.880 0.920 RG
+40.00 241.89 515.28 20.00 re
+B
+BT
+/F2 8.5 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 46.00 248.89 Tm
+(Gate Metric) Tj
+ET
+BT
+/F2 8.5 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 151.00 248.89 Tm
+(Rule Threshold) Tj
+ET
+BT
+/F2 8.5 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 231.00 248.89 Tm
+(Pipeline Action) Tj
+ET
+BT
+/F2 8.5 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 316.00 248.89 Tm
+(Protection Rationale) Tj
+ET
+0.5 w
+1.000 1.000 1.000 rg
+0.850 0.880 0.920 RG
+40.00 222.89 515.28 19.00 re
+B
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 46.00 236.89 Tm
+(minority_recall) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 151.00 236.89 Tm
+(>= 0.8) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 231.00 236.89 Tm
+(BLOCK_DEPLOY) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 316.00 236.89 Tm
+(Prevents accuracy paradox omissions in production) Tj
+ET
+0.5 w
+0.970 0.980 0.990 rg
+0.850 0.880 0.920 RG
+40.00 203.89 515.28 19.00 re
+B
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 46.00 217.89 Tm
+(balanced_accuracy) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 151.00 217.89 Tm
+(>= 0.85) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 231.00 217.89 Tm
+(BLOCK_DEPLOY) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 316.00 217.89 Tm
+(Enforces balanced class discrimination) Tj
+ET
+0.5 w
+1.000 1.000 1.000 rg
+0.850 0.880 0.920 RG
+40.00 184.89 515.28 19.00 re
+B
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 46.00 198.89 Tm
+(brier_score) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 151.00 198.89 Tm
+(<= 0.12) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 231.00 198.89 Tm
+(BLOCK_DEPLOY) Tj
+ET
+BT
+/F1 8 Tf
+0.200 0.250 0.330 rg
+1 0 0 1 316.00 198.89 Tm
+(Guarantees reliable probability calibration) Tj
+ET
+0.7 w
+0.950 0.960 0.980 rg
+0.850 0.880 0.920 RG
+40.00 140.89 515.28 40.00 re
+B
+BT
+/F2 8.5 Tf
+0.060 0.090 0.160 rg
+1 0 0 1 52.00 163.89 Tm
+(WhyLab Verification Signature & Deterministic Attestation) Tj
+ET
+BT
+/F1 7.5 Tf
+0.390 0.450 0.550 rg
+1 0 0 1 52.00 151.89 Tm
+(This incident report is mathematically certified by WhyLab 2.0. All metrics and before/after comparisons were deterministically calculated on identical evaluation records. Digest: sha256:rep_investigatio...) Tj
+ET
+0.7 w
+0.85 0.88 0.92 RG
+40 813.89 m
+555.28 813.89 l
+S
+BT
+/F2 7.5 Tf
+0.12 0.23 0.54 rg
+1 0 0 1 40 819.89 Tm
+(WhyLab 2.0     ML Reliability Incident & Diagnostic Report) Tj
+ET
+BT
+/F1 7.5 Tf
+0.39 0.45 0.55 rg
+1 0 0 1 425.28 819.89 Tm
+(Certified Deterministic Evidence) Tj
+ET
+0.7 w
+0.85 0.88 0.92 RG
+40 32 m
+555.28 32 l
+S
+BT
+/F1 7.5 Tf
+0.39 0.45 0.55 rg
+1 0 0 1 40 22 Tm
+(WhyLab AI Reliability Systems   Machine Learning Verification Platform) Tj
+ET
+BT
+/F2 7.5 Tf
+0.2 0.25 0.33 rg
+1 0 0 1 495.28 22 Tm
+(Page 2 of 2) Tj
+ET
+
+endstream
+endobj
+7 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+8 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+9 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+10 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier-Bold >>
+endobj
+xref
+0 11
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000127 00000 n 
+0000000336 00000 n 
+0000009702 00000 n 
+0000009911 00000 n 
+0000022795 00000 n 
+0000022865 00000 n 
+0000022940 00000 n 
+0000023008 00000 n 
+trailer
+<< /Size 11 /Root 1 0 R >>
+startxref
+23082
+%%EOF

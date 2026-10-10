@@ -1,0 +1,116 @@
+[
+  {
+    "id": "artifact_2908d443-258c-44f4-a7c4-070360b4c1b1",
+    "name": "overconfident-classifier.csv",
+    "role": "training",
+    "format": "csv",
+    "sizeBytes": 928,
+    "contentDigest": null,
+    "validationStatus": "valid",
+    "validationIssues": [],
+    "rawContent": "y_true,y_pred,y_probability\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,0,0.01\n1,1,0.99\n0,1,0.99\n1,0,0.01\n0,1,0.99\n1,0,0.01\n0,1,0.99\n1,0,0.01\n0,1,0.99\n1,0,0.01\n0,1,0.99\n1,0,0.01\n0,1,0.99\n1,0,0.01\n0,1,0.99\n1,0,0.01\n0,1,0.99\n1,0,0.01\n0,1,0.99\n1,0,0.01\n0,1,0.99\n1,0,0.01\n",
+    "schema": {
+      "columns": [
+        "y_true",
+        "y_pred",
+        "y_probability"
+      ],
+      "columnTypes": {
+        "y_true": "numeric",
+        "y_pred": "numeric",
+        "y_probability": "numeric"
+      },
+      "rowCount": 100,
+      "sampleRows": [
+        {
+          "y_true": "0",
+          "y_pred": "0",
+          "y_probability": "0.01"
+        },
+        {
+          "y_true": "1",
+          "y_pred": "1",
+          "y_probability": "0.99"
+        },
+        {
+          "y_true": "0",
+          "y_pred": "0",
+          "y_probability": "0.01"
+        },
+        {
+          "y_true": "1",
+          "y_pred": "1",
+          "y_probability": "0.99"
+        },
+        {
+          "y_true": "0",
+          "y_pred": "0",
+          "y_probability": "0.01"
+        },
+        {
+          "y_true": "1",
+          "y_pred": "1",
+          "y_probability": "0.99"
+        },
+        {
+          "y_true": "0",
+          "y_pred": "0",
+          "y_probability": "0.01"
+        },
+        {
+          "y_true": "1",
+          "y_pred": "1",
+          "y_probability": "0.99"
+        },
+        {
+          "y_true": "0",
+          "y_pred": "0",
+          "y_probability": "0.01"
+        },
+        {
+          "y_true": "1",
+          "y_pred": "1",
+          "y_probability": "0.99"
+        }
+      ],
+      "columnSummaries": [
+        {
+          "name": "y_true",
+          "detectedType": "numeric",
+          "sampleValues": [
+            "0",
+            "1"
+          ],
+          "distinctCount": 2,
+          "missingCount": 0,
+          "min": 0,
+          "max": 1
+        },
+        {
+          "name": "y_pred",
+          "detectedType": "numeric",
+          "sampleValues": [
+            "0",
+            "1"
+          ],
+          "distinctCount": 2,
+          "missingCount": 0,
+          "min": 0,
+          "max": 1
+        },
+        {
+          "name": "y_probability",
+          "detectedType": "numeric",
+          "sampleValues": [
+            "0.01",
+            "0.99"
+          ],
+          "distinctCount": 2,
+          "missingCount": 0,
+          "min": 0.01,
+          "max": 0.99
+        }
+      ]
+    }
+  }
+]

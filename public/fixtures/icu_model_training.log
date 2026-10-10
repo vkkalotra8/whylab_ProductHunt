@@ -1,0 +1,13 @@
+[experiment] icu_deterioration_predictor_v2 / XGBoost + BiLSTM
+[architecture] Dense(128, relu) -> Dropout(0.3) -> BiLSTM(64) -> Output(1, sigmoid)
+[optimizer] Adam(lr=0.001) loss=binary_crossentropy batch_size=64
+[epoch 26/30] train_loss=0.124 val_loss=0.185 train_accuracy=0.962 val_accuracy=0.941
+[epoch 27/30] train_loss=0.108 val_loss=0.204 train_accuracy=0.971 val_accuracy=0.939
+[epoch 28/30] train_loss=0.092 val_loss=0.228 train_accuracy=0.980 val_accuracy=0.936
+[epoch 29/30] train_loss=0.078 val_loss=0.252 train_accuracy=0.988 val_accuracy=0.934
+[epoch 30/30] train_loss=0.064 val_loss=0.281 train_accuracy=0.992 val_accuracy=0.931
+[validation] accuracy=0.931 samples=1000
+[production] accuracy=0.624 samples=850
+[data] train=metro_telemetry production=rural_mobile_vitals
+[classes] majority=91.5% minority_recall=0.258
+[audit] duplicate_check=flagged near_duplicate_count=2
