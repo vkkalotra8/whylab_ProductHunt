@@ -33,6 +33,8 @@ export const idKinds = [
   'model_version',
   'prediction',
   'audit',
+  'rule',
+  'alert',
 ] as const;
 
 export type IdKind = (typeof idKinds)[number];

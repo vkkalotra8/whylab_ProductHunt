@@ -47,7 +47,7 @@ export function checkCalibration(
 
   let missing = false;
   const records = Array.from(data.rows, (r, i) => {
-    if (!r || ![data.labels.positive, data.labels.negative].includes(r.actual)) {
+    if (!r || r.actual === null || ![data.labels.positive, data.labels.negative].includes(r.actual)) {
       fail(`$.rows[${i}].actual`, 'invalid true class');
     }
     const score = r.positiveProbability;

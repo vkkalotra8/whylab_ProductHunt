@@ -3,13 +3,17 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Breadcrumbs from '@/ui/components/shell/breadcrumbs';
+import ModalitySelector, { type ModalityType } from '@/ui/components/ingest/modality-selector';
 import MultiArtifactDropzone from '@/ui/components/ingest/multi-artifact-dropzone';
 import ColumnMapper from '@/ui/components/ingest/column-mapper';
 import CapabilityChecklist from '@/ui/components/ingest/capability-checklist';
+import CapabilityManifestView from '@/ui/components/ingest/capability-manifest-view';
 import type { DatasetPreview, InferredColumnMapping } from '@/core/diagnostics/capability';
 import { evaluateCapabilities, evaluateMultiArtifactCapabilities } from '@/core/diagnostics/capability';
 import { previewEvaluationCsv } from '@/core/diagnostics/evaluation-ingestion';
 import type { InvestigationArtifact, MultiArtifactValidationResult } from '@/core/domain/artifacts';
+import { BaselineOptInModal } from '@/ui/components/ingest/baseline-opt-in-modal';
+import { trainExperimentalBaseline, type BaselineTrainingResult } from '@/core/inference/baseline-trainer';
 import {
   ArrowRight,
   CheckCircle2,
@@ -34,16 +38,45 @@ import {
   Layers,
   Wrench,
   Lock,
+  Cpu,
+  Camera,
 } from 'lucide-react';
 
-const stages = [
-  { id: 'ingest', num: '01', name: 'Ingest', desc: 'Dataset upload & schema' },
-  { id: 'profile', num: '02', name: 'Profile', desc: 'Prevalence & baseline metrics' },
-  { id: 'investigate', num: '03', name: 'Investigate', desc: 'Astra tool orchestration' },
-  { id: 'verify', num: '04', name: 'Verify', desc: 'Falsification experiments' },
-  { id: 'repair', num: '05', name: 'Repair', desc: '101-point policy optimization' },
-  { id: 'report', num: '06', name: 'Report', desc: 'Certified incident report' },
-];
+function getStages(hasNoPredictions: boolean) {
+  return [
+    { id: 'ingest', num: '01', name: 'Ingest', desc: 'Dataset upload & schema' },
+    {
+      id: 'profile',
+      num: '02',
+      name: 'Profile',
+      desc: hasNoPredictions ? 'Distribution, quality & missingness' : 'Prevalence & baseline metrics',
+    },
+    {
+      id: 'investigate',
+      num: '03',
+      name: 'Investigate',
+      desc: hasNoPredictions ? 'Autonomous data quality audit' : 'Astra tool orchestration',
+    },
+    {
+      id: 'verify',
+      num: '04',
+      name: 'Verify',
+      desc: hasNoPredictions ? 'Association & drift screening' : 'Falsification experiments',
+    },
+    {
+      id: 'repair',
+      num: '05',
+      name: 'Repair',
+      desc: hasNoPredictions ? 'Data curation & hygiene policy' : '101-point policy optimization',
+    },
+    {
+      id: 'report',
+      num: '06',
+      name: 'Report',
+      desc: hasNoPredictions ? 'Certified data intelligence report' : 'Certified incident report',
+    },
+  ];
+}
 
 interface LogEntry {
   id: string;
@@ -54,8 +87,28 @@ interface LogEntry {
 }
 
 export default function InvestigatePage() {
+  const [activeModality, setActiveModality] = useState<ModalityType>('tabular');
   const [activeStage, setActiveStage] = useState('ingest');
   const [sourceMode, setSourceMode] = useState<'upload' | 'benchmark'>('upload');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const mod = params.get('modality');
+      if (mod === 'llm' || mod === 'vision' || mod === 'tabular') {
+        setActiveModality(mod);
+      }
+    }
+  }, []);
+
+  const handleModalityChange = (mod: ModalityType) => {
+    setActiveModality(mod);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('modality', mod);
+      window.history.replaceState(null, '', url.toString());
+    }
+  };
   const [selectedFixture, setSelectedFixture] = useState<string>('melanoma-synthetic.csv');
   const [customPreview, setCustomPreview] = useState<DatasetPreview | null>(null);
   const [customCsv, setCustomCsv] = useState<string | null>(null);
@@ -95,6 +148,85 @@ export default function InvestigatePage() {
     ]);
   };
 
+  const [isBaselineModalOpen, setIsBaselineModalOpen] = useState(false);
+  const [activeBaseline, setActiveBaseline] = useState<BaselineTrainingResult | null>(null);
+
+  const handleGenerateBaseline = (config: {
+    seed: number;
+    modelType: 'logistic_regression';
+    trainRatio: number;
+    valRatio: number;
+    testRatio: number;
+  }) => {
+    if (!customPreview || !customCsv) return;
+    const targetCol = customMapping?.targetColumn ?? customPreview.inferredMapping.targetColumn;
+    if (!targetCol) return;
+
+    const posLabel = customLabels?.positive ?? customPreview.detectedLabels?.positive ?? '1';
+    const negLabel = customLabels?.negative ?? customPreview.detectedLabels?.negative ?? '0';
+
+    const lines = customCsv.trim().split(/\r?\n/);
+    if (lines.length < 2) return;
+    const headers = lines[0].split(',').map((h) => h.trim().replace(/^"|"$/g, ''));
+    const rows = lines.slice(1).map((line) => {
+      const vals = line.split(',').map((v) => v.trim().replace(/^"|"$/g, ''));
+      const obj: Record<string, unknown> = {};
+      headers.forEach((h, i) => {
+        obj[h] = vals[i] ?? '';
+      });
+      return obj;
+    });
+
+    try {
+      const result = trainExperimentalBaseline({
+        datasetName: customPreview.fileName,
+        rows,
+        targetColumn: targetCol,
+        positiveLabel: posLabel,
+        negativeLabel: negLabel,
+        seed: config.seed,
+        trainRatio: config.trainRatio,
+        valRatio: config.valRatio,
+        testRatio: config.testRatio,
+        optInConfirmed: true,
+      });
+
+      setActiveBaseline(result);
+
+      // Create augmented CSV with _baseline_pred and _baseline_prob
+      const newHeaders = [...headers, '_baseline_pred', '_baseline_prob'];
+      const newLines = [newHeaders.join(',')];
+      for (let i = 0; i < rows.length; i++) {
+        const pred = result.predictions[i];
+        const origLine = lines[i + 1];
+        newLines.push(`${origLine},${pred.predicted},${pred.probability}`);
+      }
+      const augmentedCsv = newLines.join('\n');
+      setCustomCsv(augmentedCsv);
+
+      const newPreview = previewEvaluationCsv(augmentedCsv, customPreview.fileName);
+      setCustomPreview(newPreview);
+
+      const updatedMapping: InferredColumnMapping = {
+        ...(customMapping ?? customPreview.inferredMapping),
+        targetColumn: targetCol,
+        predictionColumn: '_baseline_pred',
+        probabilityColumn: '_baseline_prob',
+      };
+      setCustomMapping(updatedMapping);
+
+      appendLog(
+        'system',
+        `[EXPERIMENTAL BASELINE ACTIVE] Model: ${result.modelType}, Seed: ${result.seed}, Holdout F1: ${result.holdoutMetrics.f1}, ROC-AUC: ${result.holdoutMetrics.rocAuc ?? 'N/A'}`
+      );
+    } catch (err) {
+      appendLog(
+        'error',
+        `Baseline training failed: ${err instanceof Error ? err.message : String(err)}`
+      );
+    }
+  };
+
   const handleStartInvestigation = async (fixtureName = selectedFixture) => {
     setIsRunning(true);
     setTelemetryOpen(true);
@@ -132,7 +264,14 @@ export default function InvestigatePage() {
       });
 
       if (!res.ok || !res.body) {
-        throw new Error(`Server returned error status: ${res.status}`);
+        let errorDetail = '';
+        try {
+          const errData = await res.json();
+          errorDetail = errData.error || errData.message || '';
+        } catch {
+          // ignore
+        }
+        throw new Error(errorDetail || `Server returned error status: ${res.status}`);
       }
 
       const reader = res.body.getReader();
@@ -181,7 +320,8 @@ export default function InvestigatePage() {
     switch (event.type) {
       case 'started': {
         const invId = event.investigationId as string;
-        appendLog('started', `Investigation ${invId} registered. Objective: ${event.objective}`);
+        const providerInfo = event.provider ? ` [Provider: ${event.provider}${event.model ? ` / ${event.model}` : ''}]` : '';
+        appendLog('started', `Investigation ${invId} registered.${providerInfo} Objective: ${event.objective}`);
         setActiveStage('profile');
         break;
       }
@@ -241,8 +381,10 @@ export default function InvestigatePage() {
       case 'completed': {
         const inv = event.investigation as { id: string };
         setCompletedInvestigationId(inv.id);
+        const usage = event.usage as { totalTokens?: number; promptTokens?: number; completionTokens?: number } | undefined;
+        const usageDetail = usage?.totalTokens ? ` [Tokens: ${usage.totalTokens} (${usage.promptTokens} in / ${usage.completionTokens} out)]` : '';
         setStatusMessage(`Investigation completed successfully! ID: ${inv.id}`);
-        appendLog('system', `Investigation complete. Saved with ID ${inv.id}.`);
+        appendLog('system', `Investigation complete.${usageDetail} Saved with ID ${inv.id}.`);
         break;
       }
       case 'stopped': {
@@ -273,8 +415,11 @@ export default function InvestigatePage() {
     }
   };
 
+  const hasNoPredictions = Boolean(sourceMode === 'upload' && customPreview && !customMapping?.predictionColumn);
+  const stages = getStages(hasNoPredictions);
+
   // Derive stage status for the 6-stage workflow
-  const getStageStatus = (stageId: string) => {
+  const getStageStatus = (stageId: string): 'completed' | 'available' | 'active' | 'locked' | 'missing_evidence' => {
     if (completedInvestigationId) return 'completed';
     if (stageId === activeStage) return 'active';
     if (stageId === 'ingest') {
@@ -288,8 +433,10 @@ export default function InvestigatePage() {
       return customPreview || selectedFixture ? 'available' : 'locked';
     }
     if (stageId === 'verify' || stageId === 'repair') {
-      const isLabelOnly = Boolean(sourceMode === 'upload' && customPreview && !customMapping?.predictionColumn);
-      if (isLabelOnly) return 'missing_evidence';
+      if (hasNoPredictions) {
+        if (completedInvestigationId) return 'completed';
+        return isRunning ? 'active' : 'available';
+      }
       return isRunning ? 'active' : 'locked';
     }
     if (stageId === 'report') {
@@ -298,13 +445,20 @@ export default function InvestigatePage() {
     return 'locked';
   };
 
-  const hasNoPredictions = Boolean(sourceMode === 'upload' && customPreview && !customMapping?.predictionColumn);
-
   return (
     <div style={{ paddingBottom: 'var(--space-16)' }}>
       <Breadcrumbs items={[{ label: 'investigate', href: '/investigate' }, { label: activeStage }]} />
 
       <div className="container-wide" style={{ paddingTop: 'var(--space-6)' }}>
+        {/* Multi-Modal Modality Selector */}
+        <div style={{ marginBottom: 'var(--space-6)' }}>
+          <ModalitySelector
+            activeModality={activeModality}
+            onChange={handleModalityChange}
+            showDescriptions={true}
+          />
+        </div>
+
         {/* Studio Header */}
         <div
           style={{
@@ -438,7 +592,133 @@ export default function InvestigatePage() {
             {/* STAGE 01: INGEST */}
             {activeStage === 'ingest' && (
               <>
-                {/* Source Mode Switcher */}
+                {activeModality === 'llm' ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border-default)', paddingBottom: 'var(--space-3)' }}>
+                      <div>
+                        <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <Cpu size={18} style={{ color: '#8b5cf6' }} />
+                          LLM & RAG Reliability Ingestion Hub
+                        </h3>
+                        <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', margin: '2px 0 0' }}>
+                          Deterministic evaluation of NLP exact match, Token F1, strict JSON schemas, and multi-passage RAG grounding.
+                        </p>
+                      </div>
+                      <span className="badge badge-accent">LLM Guard Suite</span>
+                    </div>
+
+                    {/* Preloaded Flagship RAG Benchmark */}
+                    <div className="card" style={{ padding: 'var(--space-5)', backgroundColor: 'var(--bg-surface)' }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                            <span className="badge badge-primary" style={{ fontSize: '10px' }}>FLAGSHIP BENCHMARK</span>
+                            <strong style={{ fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}>
+                              RAG Golden Retrieval & Grounding Benchmark (<code>rag-eval.jsonl</code>)
+                            </strong>
+                          </div>
+                          <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', margin: '4px 0 0', maxWidth: '600px' }}>
+                            40 Clinical QA queries with 5 retrieval context passages each, citation tags (<code>[doc_id]</code>), and golden reference answers.
+                          </p>
+                        </div>
+                        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                          <Link href="/investigate/llm" className="btn btn-primary btn-sm">
+                            <Play size={13} />
+                            Launch LLM Investigation Studio
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* LLM Engine Capability Checklist */}
+                    <div className="card" style={{ padding: 'var(--space-4)' }}>
+                      <h4 style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: 'var(--space-3)' }}>
+                        Verified LLM Diagnostics Checklist
+                      </h4>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 'var(--space-2)' }}>
+                        {[
+                          { label: 'Exact Match & Token Overlap F1', desc: 'Case-sensitive & normalized token-level similarity' },
+                          { label: 'JSON Schema Validation', desc: 'Syntactic parse & required property structural check' },
+                          { label: 'RAG Retrieval Ranking', desc: 'Mean Reciprocal Rank (MRR) & Recall@k' },
+                          { label: 'Context Attribution Audit', desc: 'Sentence-level support & phantom citation detector' },
+                          { label: 'Paired McNemar Tests', desc: 'Statistical significance testing across prompt variants' },
+                        ].map((cap) => (
+                          <div key={cap.label} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', backgroundColor: 'rgba(255, 255, 255, 0.02)' }}>
+                            <CheckCircle2 size={14} style={{ color: 'var(--status-success)', marginTop: '2px', flexShrink: 0 }} />
+                            <div>
+                              <strong style={{ fontSize: 'var(--text-xs)', display: 'block', color: 'var(--text-primary)' }}>{cap.label}</strong>
+                              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{cap.desc}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ) : activeModality === 'vision' ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border-default)', paddingBottom: 'var(--space-3)' }}>
+                      <div>
+                        <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <Camera size={18} style={{ color: '#10b981' }} />
+                          Computer Vision Diagnostic Ingestion Hub
+                        </h3>
+                        <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', margin: '2px 0 0' }}>
+                          Memory-safe image decompression, discrete Laplacian quality shifts, and cross-split dHash leakage scans.
+                        </p>
+                      </div>
+                      <span className="badge badge-accent">Vision Diagnostic Suite</span>
+                    </div>
+
+                    {/* Preloaded Flagship Vision Benchmark */}
+                    <div className="card" style={{ padding: 'var(--space-5)', backgroundColor: 'var(--bg-surface)' }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                            <span className="badge badge-primary" style={{ fontSize: '10px' }}>FLAGSHIP BENCHMARK</span>
+                            <strong style={{ fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}>
+                              Clinical Dermatology Benchmark (<code>public/fixtures/vision/</code>)
+                            </strong>
+                          </div>
+                          <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', margin: '4px 0 0', maxWidth: '600px' }}>
+                            150 Dermoscopic lesion cases across Tripod (Site A) & Handheld (Site B) devices with 3 planted near-duplicate leakages and scale ruler confounders.
+                          </p>
+                        </div>
+                        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                          <Link href="/investigate/vision" className="btn btn-primary btn-sm">
+                            <Play size={13} />
+                            Launch Vision Investigation Studio
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Vision Diagnostics Checklist */}
+                    <div className="card" style={{ padding: 'var(--space-4)' }}>
+                      <h4 style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: 'var(--space-3)' }}>
+                        Verified Computer Vision Diagnostics Checklist
+                      </h4>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 'var(--space-2)' }}>
+                        {[
+                          { label: 'CWE-409/22 Decompression Defenses', desc: 'Guards against decompression bombs and path traversals' },
+                          { label: 'Discrete Laplacian Sharpness & Contrast', desc: 'Deterministic kernel variance and histogram metrics' },
+                          { label: '64-bit dHash Leakage Engine', desc: 'Pairwise Hamming popcount near-duplicate detection' },
+                          { label: 'Two-Sample KS & PSI Quality Shift', desc: 'Site A vs Site B distribution drift analysis' },
+                          { label: 'Shortcut Learning Confounder Odds Ratio', desc: 'Quantifies recall collapse when artifacts are missing' },
+                        ].map((cap) => (
+                          <div key={cap.label} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', backgroundColor: 'rgba(255, 255, 255, 0.02)' }}>
+                            <CheckCircle2 size={14} style={{ color: 'var(--status-success)', marginTop: '2px', flexShrink: 0 }} />
+                            <div>
+                              <strong style={{ fontSize: 'var(--text-xs)', display: 'block', color: 'var(--text-primary)' }}>{cap.label}</strong>
+                              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{cap.desc}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {/* Source Mode Switcher */}
                 <div
                   style={{
                     display: 'flex',
@@ -522,48 +802,62 @@ export default function InvestigatePage() {
                         const isLabelOnly = hasNoPredictions;
 
                         return (
-                          <>
-                            <CapabilityChecklist capabilities={caps} />
-
-                            {isLabelOnly ? (
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
-                                <div className="alert alert-info" style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-2)' }}>
-                                  <Info size={16} className="text-sky-400 shrink-0 mt-0.5" />
-                                  <span style={{ fontSize: 'var(--text-xs)' }}>
-                                    This dataset contains labels but no model predictions. WhyLab can profile the dataset and inspect data quality. Upload prediction outputs to enable model performance evaluation.
+                          <div style={{ marginTop: 'var(--space-2)' }}>
+                            {activeBaseline && (
+                              <div
+                                style={{
+                                  padding: '10px 14px',
+                                  backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                                  border: '1px solid rgba(245, 158, 11, 0.4)',
+                                  borderRadius: 'var(--radius-md)',
+                                  marginBottom: 'var(--space-3)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'space-between',
+                                  fontSize: '12px',
+                                }}
+                              >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <span style={{ color: '#f59e0b', fontWeight: 700 }}>
+                                    ⚡ EXPERIMENTAL BASELINE ACTIVE
+                                  </span>
+                                  <span style={{ color: 'var(--text-muted)' }}>|</span>
+                                  <span style={{ color: 'var(--text-secondary)' }}>Seed: {activeBaseline.seed}</span>
+                                  <span style={{ color: 'var(--text-muted)' }}>|</span>
+                                  <span style={{ color: 'var(--text-secondary)' }}>
+                                    Holdout ROC-AUC: {activeBaseline.holdoutMetrics.rocAuc ?? 'N/A'}
+                                  </span>
+                                  <span style={{ color: 'var(--text-muted)' }}>|</span>
+                                  <span style={{ color: 'var(--text-secondary)' }}>
+                                    Holdout F1: {activeBaseline.holdoutMetrics.f1}
                                   </span>
                                 </div>
-                                <button
-                                  type="button"
-                                  onClick={() => setActiveStage('profile')}
-                                  className="btn btn-secondary btn-sm"
-                                  style={{ width: '100%' }}
-                                >
-                                  <BarChart2 size={14} />
-                                  Inspect Dataset Profile & Data Quality
-                                </button>
+                                <span style={{ fontSize: '11px', color: 'rgba(245, 158, 11, 0.8)', fontStyle: 'italic', fontFamily: 'var(--font-mono)' }}>
+                                  Diagnostic reference only. Never deploy to production.
+                                </span>
                               </div>
-                            ) : (
-                              <button
-                                disabled={isRunning || !caps.isSupportedForInvestigation || !customPreview}
-                                onClick={() => handleStartInvestigation()}
-                                className="btn btn-primary btn-sm"
-                                style={{ width: '100%', marginTop: 'var(--space-2)' }}
-                              >
-                                {isRunning ? (
-                                  <>
-                                    <Loader2 size={14} className="animate-spin" />
-                                    Running Autonomous Investigation...
-                                  </>
-                                ) : (
-                                  <>
-                                    <Play size={14} />
-                                    Launch Investigation on {customPreview ? customPreview.fileName : `${artifacts.length} Artifacts`}
-                                  </>
-                                )}
-                              </button>
                             )}
-                          </>
+
+                            <CapabilityManifestView
+                              capabilities={caps}
+                              manifest={customPreview?.manifest}
+                              onLaunchInvestigation={() => handleStartInvestigation()}
+                              onGenerateBaseline={() => setIsBaselineModalOpen(true)}
+                              isRunning={isRunning}
+                            />
+
+                            {customPreview && (
+                              <BaselineOptInModal
+                                isOpen={isBaselineModalOpen}
+                                onClose={() => setIsBaselineModalOpen(false)}
+                                onConfirm={handleGenerateBaseline}
+                                datasetName={customPreview.fileName}
+                                targetColumn={customMapping?.targetColumn ?? customPreview.inferredMapping.targetColumn ?? 'y_true'}
+                                positiveLabel={customLabels?.positive ?? customPreview.detectedLabels?.positive ?? '1'}
+                                rowCount={customPreview.totalRows}
+                              />
+                            )}
+                          </div>
                         );
                       })()}
                     </div>
@@ -634,6 +928,8 @@ export default function InvestigatePage() {
                 )}
               </>
             )}
+          </>
+        )}
 
             {/* STAGE 02: PROFILE */}
             {activeStage === 'profile' && (
@@ -731,15 +1027,33 @@ export default function InvestigatePage() {
 
                     {/* Action buttons */}
                     <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-                      {!hasNoPredictions ? (
-                        <button onClick={() => handleStartInvestigation()} className="btn btn-primary btn-sm" style={{ flex: 1 }}>
-                          <Play size={13} />
-                          Launch Full Investigation
-                        </button>
-                      ) : (
+                      <button
+                        onClick={() => handleStartInvestigation()}
+                        disabled={isRunning}
+                        className="btn btn-primary btn-sm"
+                        style={{ flex: 1 }}
+                      >
+                        {isRunning ? (
+                          <>
+                            <Loader2 size={13} className="animate-spin" />
+                            Running Investigation...
+                          </>
+                        ) : !hasNoPredictions ? (
+                          <>
+                            <Play size={13} />
+                            Launch Full Investigation
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles size={13} />
+                            Launch Dataset Intelligence Investigation
+                          </>
+                        )}
+                      </button>
+                      {hasNoPredictions && (
                         <button onClick={() => setActiveStage('ingest')} className="btn btn-secondary btn-sm" style={{ flex: 1 }}>
                           <UploadCloud size={13} />
-                          Upload Prediction Outputs to Enable Reliability Evaluation
+                          Upload Predictions (Optional)
                         </button>
                       )}
                     </div>
@@ -775,16 +1089,27 @@ export default function InvestigatePage() {
                     <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 var(--space-2)' }}>
                       Ready to Launch Investigation
                     </h4>
-                    <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', maxWidth: '400px', margin: '0 auto var(--space-4)' }}>
-                      Click below to dispatch the autonomous multi-turn loop and test for class imbalance, calibration failure, and slice disparity.
+                    <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', maxWidth: '440px', margin: '0 auto var(--space-4)' }}>
+                      {hasNoPredictions
+                        ? 'Click below to dispatch autonomous dataset intelligence screening for data hygiene, duplicate entities, feature-target leakage, and quality risks.'
+                        : 'Click below to dispatch the autonomous multi-turn loop and test for class imbalance, calibration failure, and slice disparity.'}
                     </p>
                     <button
                       onClick={() => handleStartInvestigation()}
-                      disabled={hasNoPredictions}
+                      disabled={isRunning}
                       className="btn btn-primary btn-sm"
                     >
-                      <Play size={13} />
-                      Launch Autonomous Investigation
+                      {hasNoPredictions ? (
+                        <>
+                          <Sparkles size={13} />
+                          Launch Dataset Intelligence Investigation
+                        </>
+                      ) : (
+                        <>
+                          <Play size={13} />
+                          Launch Autonomous Investigation
+                        </>
+                      )}
                     </button>
                   </div>
                 )}

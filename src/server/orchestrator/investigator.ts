@@ -27,13 +27,15 @@ import { toolNames, type DiagnosticToolCall, type DiagnosticToolResult } from '.
 import type { EvaluationDataset } from '../../core/diagnostics/evaluation-ingestion.ts';
 import { runThresholdSweep } from '../../core/diagnostics/threshold-sweep.ts';
 import { dispatchDiagnosticTool } from './dispatcher.ts';
-import type { InvestigatorProvider, InvestigatorHistoryEntry } from './provider.ts';
+import type { InvestigatorProvider, InvestigatorHistoryEntry, TokenUsage } from './provider.ts';
 import { OfflineInvestigatorProvider } from './provider-offline.ts';
 import { OpenAIInvestigatorProvider } from './provider-openai.ts';
+import { resolveInvestigatorProvider } from './provider-factory.ts';
 
 export interface InvestigatorOptions {
   investigationId?: Id<'investigation'>;
   provider?: InvestigatorProvider;
+  offlineOnly?: boolean;
   objective?: string;
   maxRounds?: number;
   maxToolCalls?: number;
@@ -44,8 +46,8 @@ export interface InvestigatorOptions {
 }
 
 export type InvestigationEventMessage =
-  | { type: 'started'; investigationId: string; objective: string }
-  | { type: 'progress'; round: number; maxRounds: number; stage: string; message: string }
+  | { type: 'started'; investigationId: string; objective: string; provider?: string; model?: string }
+  | { type: 'progress'; round: number; maxRounds: number; stage: string; message: string; usage?: TokenUsage }
   | { type: 'directive_injected'; directive: string }
   | { type: 'tool_call'; call: DiagnosticToolCall; rationale: string }
   | { type: 'tool_result'; result: DiagnosticToolResult }
@@ -55,7 +57,7 @@ export type InvestigationEventMessage =
   | { type: 'repair_added'; repair: RepairCandidate }
   | { type: 'comparison_added'; comparison: BeforeAfterComparison }
   | { type: 'diagnosis_finalized'; diagnosis: Diagnosis }
-  | { type: 'completed'; investigation: Investigation }
+  | { type: 'completed'; investigation: Investigation; provider?: string; model?: string; usage?: TokenUsage }
   | { type: 'stopped'; reason: string; investigation: Investigation }
   | { type: 'error'; code: string; message: string; fatal: boolean };
 
@@ -72,15 +74,8 @@ export async function* runAutonomousInvestigation(
   const maxConsecutiveErrors = options.maxConsecutiveErrors ?? 3;
   const timeoutMs = options.timeoutMs ?? 120_000;
 
-  // Select provider: caller-provided -> OpenAI (if env key available) -> Offline deterministic
-  let provider: InvestigatorProvider;
-  if (options.provider) {
-    provider = options.provider;
-  } else if (process.env.OPENAI_API_KEY) {
-    provider = new OpenAIInvestigatorProvider(process.env.OPENAI_API_KEY);
-  } else {
-    provider = new OfflineInvestigatorProvider();
-  }
+  // Select provider: options.provider -> options.offlineOnly -> factory resolution (gemini -> openai -> offline)
+  const provider = resolveInvestigatorProvider(options);
 
   // Initialize draft investigation
   const objective =
@@ -107,6 +102,8 @@ export async function* runAutonomousInvestigation(
     type: 'started',
     investigationId: investigation.id,
     objective: investigation.objective,
+    provider: provider.name,
+    model: provider.model,
   };
 
   const history: InvestigatorHistoryEntry[] = [];
@@ -429,14 +426,14 @@ export async function* runAutonomousInvestigation(
         primaryHypothesisId: primaryHypId,
         confidence: {
           kind: 'evidence_strength',
-          level: response.confidenceLevel,
-          rationale: response.confidenceRationale,
+          level: response.confidenceLevel ?? 'moderate',
+          rationale: response.confidenceRationale ?? 'Diagnosis formulated from verified diagnostic findings.',
         },
         experimentIds: investigation.experiments.map((e) => e.id),
         repairIds: investigation.repairs.map((r) => r.id),
         comparisonIds: investigation.comparisons.map((c) => c.id),
         unresolvedQuestions: [],
-        limitations: response.limitations,
+        limitations: response.limitations ?? [],
       };
 
       investigation = finalizeInvestigationWithDiagnosis(investigation, diagnosis);
@@ -450,6 +447,9 @@ export async function* runAutonomousInvestigation(
       yield {
         type: 'completed',
         investigation,
+        provider: provider.name,
+        model: provider.model,
+        usage: provider.getCumulativeUsage ? provider.getCumulativeUsage() : undefined,
       };
 
       return investigation;
@@ -488,6 +488,9 @@ export async function* runAutonomousInvestigation(
   yield {
     type: 'completed',
     investigation,
+    provider: provider.name,
+    model: provider.model,
+    usage: provider.getCumulativeUsage ? provider.getCumulativeUsage() : undefined,
   };
 
   return investigation;

@@ -92,4 +92,90 @@ test('reEvaluateRepair: compares baseline 0.50 vs repaired 0.19 on identical row
   assert.equal(report.output.confusionDelta.falseNegative, -8);
   assert.equal(report.output.confusionDelta.falsePositive, 4);
   assert.equal(report.output.confusionDelta.trueNegative, -4);
+
+  // Milestone M3: Single-cohort safeguard disclaimer
+  assert.equal(report.validationMode, 'single_cohort_optimization');
+  assert.equal(report.isHoldoutValidated, false);
+  assert.ok(report.disclaimer.includes('Optimization Cohort Only'));
+  assert.ok(report.limitations.some((l) => l.includes('[SAFEGUARD DISCLAIMER]')));
+});
+
+test('reEvaluateRepair: evaluates separate independent holdout dataset without contamination', () => {
+  // Optimization dataset
+  const optRows = [
+    { actual: '0', predicted: '0', positiveProbability: 0.1 },
+    { actual: '1', predicted: '0', positiveProbability: 0.4 },
+  ];
+  const optDataset = createMockDataset(optRows);
+
+  // Independent Holdout dataset (distinct rows)
+  const holdoutRows = [
+    { actual: '0', predicted: '0', positiveProbability: 0.05 },
+    { actual: '0', predicted: '0', positiveProbability: 0.15 },
+    { actual: '1', predicted: '1', positiveProbability: 0.85 },
+    { actual: '1', predicted: '0', positiveProbability: 0.35 },
+  ];
+  const holdoutDataset = createMockDataset(holdoutRows);
+
+  const repairId = createId('repair');
+  const evId = createId('evidence');
+
+  const report = reEvaluateRepair(
+    optDataset,
+    {
+      datasetId: optDataset.metadata.id,
+      repairId,
+      positiveLabel: '1',
+      baselineThreshold: 0.5,
+      repairedThreshold: 0.25,
+      criterion: { metric: 'recall', operator: 'at_least', value: 0.5, unit: 'ratio' },
+      baselineEvidenceIds: [evId],
+    },
+    holdoutDataset
+  );
+
+  assert.equal(report.validationMode, 'independent_holdout_validated');
+  assert.equal(report.isHoldoutValidated, true);
+  assert.equal(report.leakageWarning, undefined);
+  assert.ok(report.holdoutResults);
+  assert.equal(report.holdoutResults.sampleSize, 4);
+
+  // On holdout:
+  // Baseline (0.50): pos at 0.85 (TP=1), pos at 0.35 (FN=1) -> Recall = 50%
+  // Repaired (0.25): pos at 0.85 (TP=1), pos at 0.35 (TP=1) -> Recall = 100%
+  const hBaseRec = report.holdoutResults.baselineMetrics.find((m) => m.name === 'recall')?.value;
+  const hRepRec = report.holdoutResults.repairedMetrics.find((m) => m.name === 'recall')?.value;
+  assert.equal(hBaseRec, 0.5);
+  assert.equal(hRepRec, 1.0);
+});
+
+test('reEvaluateRepair: detects holdout data contamination and emits leakage warning', () => {
+  const rows = [
+    { actual: '0', predicted: '0', positiveProbability: 0.1 },
+    { actual: '1', predicted: '0', positiveProbability: 0.4 },
+  ];
+  const optDataset = createMockDataset(rows);
+  // Re-using identical dataset as holdout
+  const contaminatedHoldout = { ...optDataset };
+
+  const repairId = createId('repair');
+  const evId = createId('evidence');
+
+  const report = reEvaluateRepair(
+    optDataset,
+    {
+      datasetId: optDataset.metadata.id,
+      repairId,
+      positiveLabel: '1',
+      baselineThreshold: 0.5,
+      repairedThreshold: 0.2,
+      criterion: { metric: 'recall', operator: 'at_least', value: 0.5, unit: 'ratio' },
+      baselineEvidenceIds: [evId],
+    },
+    contaminatedHoldout
+  );
+
+  assert.ok(report.leakageWarning);
+  assert.ok(report.leakageWarning.includes('Contamination Warning'));
+  assert.equal(report.isHoldoutValidated, false);
 });

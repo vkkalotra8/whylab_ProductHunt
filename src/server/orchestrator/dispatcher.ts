@@ -74,6 +74,11 @@ function normalizeToolInput<N extends ToolName>(
     inputObj.hypothesisId = options.hypothesisId;
   }
 
+  // Auto-fill targetColumn if missing for profile_dataset
+  if (tool === 'profile_dataset' && inputObj.targetColumn === undefined) {
+    inputObj.targetColumn = dataset.metadata.targetColumn ?? null;
+  }
+
   return inputObj as ToolInput<N>;
 }
 
@@ -144,7 +149,41 @@ export async function dispatchDiagnosticTool<N extends ToolName>(
 
     switch (tool) {
       case 'profile_dataset': {
-        output = profileEvaluationDataset(dataset, call.input as ToolInput<'profile_dataset'>) as ToolOutput<N>;
+        const profileRes = profileEvaluationDataset(dataset, call.input as ToolInput<'profile_dataset'>);
+        output = profileRes as ToolOutput<N>;
+        const profileEvidence: Evidence = {
+          id: createId('evidence'),
+          kind: 'measurement',
+          description: `Structural dataset profile for ${dataset.metadata.name}: ${profileRes.rowCount} rows, ${profileRes.columns.length} columns, ${profileRes.classes.length} class(es).`,
+          measurements: [
+            {
+              name: 'row_count',
+              status: 'measured',
+              value: profileRes.rowCount,
+              unit: 'count',
+              sampleSize: profileRes.rowCount,
+            },
+            {
+              name: 'column_count',
+              status: 'measured',
+              value: profileRes.columns.length,
+              unit: 'count',
+              sampleSize: profileRes.columns.length,
+            },
+            {
+              name: 'slice_column_count',
+              status: 'measured',
+              value: profileRes.sliceColumns.length,
+              unit: 'count',
+              sampleSize: profileRes.sliceColumns.length,
+            },
+          ],
+          provenance: {
+            kind: 'tool_result',
+            resultId,
+          },
+        };
+        artifacts.evidence = [profileEvidence];
         break;
       }
 
@@ -213,6 +252,18 @@ export async function dispatchDiagnosticTool<N extends ToolName>(
         );
         output = report.output as ToolOutput<N>;
         limitations = report.limitations;
+
+        const leakEvidence: Evidence = {
+          id: createId('evidence'),
+          kind: 'observation',
+          description: `Feature leakage scan screened ${(call.input as any).featureColumns?.length ?? 0} feature(s) against target ${(call.input as any).targetColumn ?? 'target'}: found ${report.output.observations.length} signal(s).`,
+          measurements: report.output.observations.flatMap((o) => o.measurements),
+          provenance: {
+            kind: 'tool_result',
+            resultId,
+          },
+        };
+        artifacts.evidence = [leakEvidence];
         break;
       }
 
@@ -227,6 +278,19 @@ export async function dispatchDiagnosticTool<N extends ToolName>(
         const compDataset = options.comparisonDataset ?? dataset;
         const report = runDriftTests(dataset, compDataset, call.input as ToolInput<'run_drift_tests'>);
         output = report.output as ToolOutput<N>;
+        if (report.output.comparisons.length > 0) {
+          const driftEvidence: Evidence = {
+            id: createId('evidence'),
+            kind: 'measurement',
+            description: `Distribution shift tests evaluated ${report.output.comparisons.length} feature(s) across comparison datasets.`,
+            measurements: report.output.comparisons.map((c) => c.statistic),
+            provenance: {
+              kind: 'tool_result',
+              resultId,
+            },
+          };
+          artifacts.evidence = [driftEvidence];
+        }
         break;
       }
 

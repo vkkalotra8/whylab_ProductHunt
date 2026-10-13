@@ -11,12 +11,21 @@ import {
   ChevronDown,
   ChevronUp,
   FileText,
+  Key,
+  X,
+  Target,
+  SlidersHorizontal,
+  Compass,
 } from 'lucide-react';
-import type { DatasetPreview, InferredColumnMapping } from '@/core/diagnostics/capability';
+import type { DatasetPreview, InferredColumnMapping, TaskType } from '@/core/diagnostics/capability';
 
 interface ColumnMapperProps {
   preview: DatasetPreview;
-  onMappingChange: (mapping: InferredColumnMapping, labels: { positive: string; negative: string }) => void;
+  onMappingChange: (
+    mapping: InferredColumnMapping,
+    labels: { positive: string; negative: string },
+    confirmedTask?: TaskType
+  ) => void;
   disabled?: boolean;
 }
 
@@ -28,21 +37,31 @@ export default function ColumnMapper({ preview, onMappingChange, disabled }: Col
   const [negativeLabel, setNegativeLabel] = useState<string>(
     preview.detectedLabels?.negative ?? '0'
   );
+  const [selectedTask, setSelectedTask] = useState<TaskType>(
+    preview.capabilities?.taskType ?? (mapping.predictionColumn ? 'binary_classification' : 'raw_features_no_predictions')
+  );
   const [showGlossary, setShowGlossary] = useState(false);
   const [expandedCells, setExpandedCells] = useState<Record<string, boolean>>({});
 
   const columnNames = preview.columns.map((c) => c.name);
 
-  const handleUpdate = (updated: Partial<InferredColumnMapping>, newPositive?: string, newNegative?: string) => {
+  const handleUpdate = (
+    updated: Partial<InferredColumnMapping>,
+    newPositive?: string,
+    newNegative?: string,
+    newTask?: TaskType
+  ) => {
     const nextMapping: InferredColumnMapping = { ...mapping, ...updated };
     const nextPos = newPositive ?? positiveLabel;
     const nextNeg = newNegative ?? negativeLabel;
+    const nextTask = newTask ?? selectedTask;
 
     setMapping(nextMapping);
     if (newPositive) setPositiveLabel(newPositive);
     if (newNegative) setNegativeLabel(newNegative);
+    if (newTask) setSelectedTask(newTask);
 
-    onMappingChange(nextMapping, { positive: nextPos, negative: nextNeg });
+    onMappingChange(nextMapping, { positive: nextPos, negative: nextNeg }, nextTask);
   };
 
   const toggleCellExpand = (cellKey: string) => {
@@ -96,6 +115,56 @@ export default function ColumnMapper({ preview, onMappingChange, disabled }: Col
         </div>
       </div>
 
+      {/* Task Confirmation Bar */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: 'var(--space-3)',
+          padding: 'var(--space-3) var(--space-4)',
+          backgroundColor: 'var(--bg-surface-elevated)',
+          borderRadius: 'var(--radius-sm)',
+          border: '1px solid var(--border-default)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+          <Compass size={15} style={{ color: 'var(--primary)' }} />
+          <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
+            Candidate Task Architecture:
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+          {[
+            { id: 'binary_classification', label: 'Binary Classification' },
+            { id: 'multiclass_classification', label: 'Multiclass' },
+            { id: 'regression', label: 'Regression' },
+            { id: 'raw_features_no_predictions', label: 'Dataset Intelligence (No Predictions)' },
+          ].map((t) => {
+            const isSelected = selectedTask === t.id;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                disabled={disabled}
+                onClick={() => handleUpdate({}, undefined, undefined, t.id as TaskType)}
+                className={`btn btn-sm ${isSelected ? 'btn-primary' : 'btn-ghost'}`}
+                style={{
+                  fontSize: '12px',
+                  height: '28px',
+                  padding: '0 10px',
+                  fontWeight: isSelected ? 600 : 400,
+                }}
+              >
+                {t.label} {isSelected ? '✓' : ''}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Dataset Awareness Notice: Labeled dataset without predictions */}
       {hasNoPredictions && (
         <div
@@ -106,12 +175,12 @@ export default function ColumnMapper({ preview, onMappingChange, disabled }: Col
           <Info size={18} style={{ color: 'var(--status-info)', flexShrink: 0, marginTop: '2px' }} />
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '2px' }}>
-              Labeled Dataset Without Model Predictions
+              Dataset Intelligence & Quality Profiling Mode
             </div>
             <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-              This dataset contains labels but no model predictions. WhyLab can profile the dataset,
-              inspect data quality, and audit feature distributions. Upload prediction outputs to enable
-              model performance evaluation and threshold tuning.
+              No prediction column mapped. WhyLab will execute autonomous investigations on data hygiene,
+              unsupervised missingness, feature distribution shifts, and potential feature-target leakage.
+              To audit model decision performance, map a model prediction column below.
             </div>
           </div>
         </div>
@@ -157,44 +226,74 @@ export default function ColumnMapper({ preview, onMappingChange, disabled }: Col
                 Categorical metadata (e.g. site, device, location) used to check for performance disparities across sub-populations.
               </p>
             </div>
+            <div>
+              <strong style={{ color: 'var(--text-primary)' }}>Unique Identifier (Key):</strong>
+              <p style={{ color: 'var(--text-secondary)', margin: '2px 0 0' }}>
+                Unique record key (e.g. id, patient_id) used to audit entity uniqueness and prevent sample contamination.
+              </p>
+            </div>
           </div>
         </div>
       )}
 
       {/* Mapping Selectors Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 'var(--space-4)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-3)' }}>
         {/* Target Column */}
         <div className="form-group">
-          <label htmlFor="select-target-column" className="form-label form-label-required">
-            Ground Truth (Actual)
-          </label>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+            <label htmlFor="select-target-column" className="form-label" style={{ margin: 0 }}>
+              Ground Truth (Target)
+            </label>
+            {mapping.targetColumn && (
+              <button
+                type="button"
+                onClick={() => handleUpdate({ targetColumn: null })}
+                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '11px' }}
+                title="Clear target column"
+              >
+                Clear
+              </button>
+            )}
+          </div>
           <select
             id="select-target-column"
             disabled={disabled}
             value={mapping.targetColumn ?? ''}
             onChange={(e) => handleUpdate({ targetColumn: e.target.value || null })}
-            className={`select-control ${!mapping.targetColumn ? 'select-invalid' : ''}`}
+            className="select-control"
           >
-            <option value="">-- Select Target Column --</option>
+            <option value="">-- None (Unsupervised / Unlabeled) --</option>
             {columnNames.map((col) => (
               <option key={col} value={col}>
                 {col}
               </option>
             ))}
           </select>
-          <span className="form-helper">Verified ground-truth annotations</span>
+          <span className="form-helper">Ground-truth label column</span>
         </div>
 
         {/* Prediction Column */}
         <div className="form-group">
-          <label htmlFor="select-prediction-column" className="form-label">
-            <span>Model Prediction</span>
-            {hasNoPredictions && (
-              <span className="badge badge-neutral" style={{ fontSize: '11px', textTransform: 'none' }}>
-                Optional
-              </span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+            <label htmlFor="select-prediction-column" className="form-label" style={{ margin: 0 }}>
+              <span>Model Prediction</span>
+              {hasNoPredictions && (
+                <span className="badge badge-neutral" style={{ fontSize: '10px', textTransform: 'none', marginLeft: '4px' }}>
+                  Optional
+                </span>
+              )}
+            </label>
+            {mapping.predictionColumn && (
+              <button
+                type="button"
+                onClick={() => handleUpdate({ predictionColumn: null })}
+                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '11px' }}
+                title="Clear prediction column"
+              >
+                Clear
+              </button>
             )}
-          </label>
+          </div>
           <select
             id="select-prediction-column"
             disabled={disabled}
@@ -210,17 +309,27 @@ export default function ColumnMapper({ preview, onMappingChange, disabled }: Col
             ))}
           </select>
           <span className="form-helper">
-            {hasNoPredictions
-              ? 'None mapped: WhyLab will profile data quality'
-              : 'Discrete classifier output'}
+            {hasNoPredictions ? 'None: Profiling data quality' : 'Discrete classifier output'}
           </span>
         </div>
 
         {/* Probability Column */}
         <div className="form-group">
-          <label htmlFor="select-prob-column" className="form-label">
-            Probability Score
-          </label>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+            <label htmlFor="select-prob-column" className="form-label" style={{ margin: 0 }}>
+              Probability Score
+            </label>
+            {mapping.probabilityColumn && (
+              <button
+                type="button"
+                onClick={() => handleUpdate({ probabilityColumn: null })}
+                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '11px' }}
+                title="Clear probability column"
+              >
+                Clear
+              </button>
+            )}
+          </div>
           <select
             id="select-prob-column"
             disabled={disabled}
@@ -237,14 +346,26 @@ export default function ColumnMapper({ preview, onMappingChange, disabled }: Col
                 </option>
               ))}
           </select>
-          <span className="form-helper">Continuous confidence score in [0.0, 1.0]</span>
+          <span className="form-helper">Continuous confidence [0.0, 1.0]</span>
         </div>
 
         {/* Slice / Partition Column */}
         <div className="form-group">
-          <label htmlFor="select-slice-column" className="form-label">
-            Subgroup Slice
-          </label>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+            <label htmlFor="select-slice-column" className="form-label" style={{ margin: 0 }}>
+              Subgroup Slice
+            </label>
+            {mapping.sliceColumns.length > 0 && (
+              <button
+                type="button"
+                onClick={() => handleUpdate({ sliceColumns: [] })}
+                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '11px' }}
+                title="Clear slice column"
+              >
+                Clear
+              </button>
+            )}
+          </div>
           <select
             id="select-slice-column"
             disabled={disabled}
@@ -261,50 +382,86 @@ export default function ColumnMapper({ preview, onMappingChange, disabled }: Col
                 </option>
               ))}
           </select>
-          <span className="form-helper">Metadata for fairness & disparity audits</span>
+          <span className="form-helper">Metadata for fairness audits</span>
+        </div>
+
+        {/* Candidate Key / Identifier Column */}
+        <div className="form-group">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+            <label htmlFor="select-id-column" className="form-label" style={{ margin: 0 }}>
+              Identifier (Key)
+            </label>
+            {mapping.idColumn && (
+              <button
+                type="button"
+                onClick={() => handleUpdate({ idColumn: null })}
+                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '11px' }}
+                title="Clear ID column"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+          <select
+            id="select-id-column"
+            disabled={disabled}
+            value={mapping.idColumn ?? ''}
+            onChange={(e) => handleUpdate({ idColumn: e.target.value || null })}
+            className="select-control"
+          >
+            <option value="">-- None (No ID Column) --</option>
+            {columnNames.map((col) => (
+              <option key={col} value={col}>
+                {col}
+              </option>
+            ))}
+          </select>
+          <span className="form-helper">Entity key for uniqueness checks</span>
         </div>
       </div>
 
       {/* Positive Class Selection (when ground-truth has binary candidates) */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: 'var(--space-3)',
-          padding: 'var(--space-3) var(--space-4)',
-          backgroundColor: 'var(--bg-surface-elevated)',
-          borderRadius: 'var(--radius-sm)',
-          border: '1px solid var(--border-default)',
-          fontSize: 'var(--text-sm)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)' }}>
-          <Tag size={14} style={{ color: 'var(--primary)' }} />
-          <span>Positive Class Label (Focal outcome):</span>
+      {mapping.targetColumn && targetCandidates.length > 0 && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: 'var(--space-3)',
+            padding: 'var(--space-3) var(--space-4)',
+            backgroundColor: 'var(--bg-surface-elevated)',
+            borderRadius: 'var(--radius-sm)',
+            border: '1px solid var(--border-default)',
+            fontSize: 'var(--text-sm)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)' }}>
+            <Tag size={14} style={{ color: 'var(--primary)' }} />
+            <span>Positive Class Label (Focal outcome):</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+            {targetCandidates.slice(0, 4).map((candidate) => {
+              const isPos = positiveLabel === candidate;
+              return (
+                <button
+                  key={candidate}
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => {
+                    const other = targetCandidates.find((c) => c !== candidate) ?? (candidate === '1' ? '0' : 'other');
+                    handleUpdate({}, candidate, other);
+                  }}
+                  className={`btn btn-sm ${isPos ? 'btn-primary' : 'btn-secondary'}`}
+                  style={{ height: '30px', fontSize: '13px', padding: '0 10px' }}
+                >
+                  {candidate} {isPos ? '✓ (Positive)' : ''}
+                </button>
+              );
+            })}
+          </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-          {targetCandidates.slice(0, 4).map((candidate) => {
-            const isPos = positiveLabel === candidate;
-            return (
-              <button
-                key={candidate}
-                type="button"
-                disabled={disabled}
-                onClick={() => {
-                  const other = targetCandidates.find((c) => c !== candidate) ?? (candidate === '1' ? '0' : 'other');
-                  handleUpdate({}, candidate, other);
-                }}
-                className={`btn btn-sm ${isPos ? 'btn-primary' : 'btn-secondary'}`}
-                style={{ height: '30px', fontSize: '13px', padding: '0 10px' }}
-              >
-                {candidate} {isPos ? '✓ (Positive)' : ''}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      )}
 
       {/* Safe Data Preview Table */}
       <div style={{ marginTop: 'var(--space-2)' }}>
@@ -345,6 +502,7 @@ export default function ColumnMapper({ preview, onMappingChange, disabled }: Col
                   const isPred = col === mapping.predictionColumn;
                   const isProb = col === mapping.probabilityColumn;
                   const isSlice = mapping.sliceColumns.includes(col);
+                  const isId = col === mapping.idColumn;
 
                   return (
                     <th key={col}>
@@ -368,6 +526,16 @@ export default function ColumnMapper({ preview, onMappingChange, disabled }: Col
                         {isSlice && (
                           <span className="badge badge-warning" style={{ fontSize: '11px', padding: '2px 6px' }}>
                             Slice
+                          </span>
+                        )}
+                        {isId && (
+                          <span className="badge badge-neutral" style={{ fontSize: '11px', padding: '2px 6px' }}>
+                            ID
+                          </span>
+                        )}
+                        {!isTarget && !isPred && !isProb && !isSlice && !isId && (
+                          <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+                            Feature
                           </span>
                         )}
                       </div>

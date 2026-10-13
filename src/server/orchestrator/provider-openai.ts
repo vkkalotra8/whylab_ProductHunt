@@ -1,12 +1,13 @@
 import type { InvestigatorProvider, ProviderTurnRequest, ProviderTurnResponse } from './provider.ts';
 import { OfflineInvestigatorProvider } from './provider-offline.ts';
 import type { ToolName } from '../../core/domain/tool-contracts.ts';
+import type { EvaluationDataset } from '../../core/diagnostics/evaluation-ingestion.ts';
 
 export class OpenAIInvestigatorProvider implements InvestigatorProvider {
   readonly name = 'openai_astra_investigator';
   private fallbackProvider = new OfflineInvestigatorProvider();
   private apiKey: string | null;
-  private model: string;
+  readonly model: string;
 
   constructor(apiKey?: string, model = 'gpt-4o') {
     this.apiKey = apiKey ?? process.env.OPENAI_API_KEY ?? null;
@@ -21,7 +22,7 @@ export class OpenAIInvestigatorProvider implements InvestigatorProvider {
 
     try {
       const messages = this.buildPromptMessages(request);
-      const tools = this.buildOpenAITools();
+      const tools = this.buildOpenAITools(request.dataset);
 
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -150,17 +151,35 @@ REPAIRS PROPOSED: ${investigation.repairs.length}
         content: `Investigation state update:\n${recentEvents.map((e) => `[${e.kind}] ${e.message}`).join('\n')}\nWhat is the next diagnostic step?`,
       });
     } else {
+      const hasPredictions = Boolean(request.dataset.metadata.predictionColumn);
       messages.push({
         role: 'user',
-        content: 'Begin the investigation by establishing baseline classification metrics and confusion matrix.',
+        content: hasPredictions
+          ? 'Begin the investigation by establishing baseline classification metrics and confusion matrix.'
+          : 'Begin the investigation by profiling dataset distributions, missingness rates, and feature cardinalities.',
       });
     }
 
     return messages;
   }
 
-  private buildOpenAITools() {
-    return [
+  private buildOpenAITools(dataset?: EvaluationDataset) {
+    const allTools = [
+      {
+        type: 'function',
+        function: {
+          name: 'profile_dataset',
+          description: 'Profiles structural distributions, missingness rates, distinct counts, and class balance across dataset columns.',
+          parameters: {
+            type: 'object',
+            properties: {
+              datasetId: { type: 'string' },
+              targetColumn: { type: 'string' },
+            },
+            required: ['datasetId'],
+          },
+        },
+      },
       {
         type: 'function',
         function: {
@@ -300,6 +319,33 @@ REPAIRS PROPOSED: ${investigation.repairs.length}
           },
         },
       },
+      {
+        type: 'function',
+        function: {
+          name: 'run_drift_tests',
+          description: 'Evaluates distribution shift and covariate drift across metadata partitions or comparison datasets.',
+          parameters: {
+            type: 'object',
+            properties: {
+              referenceDatasetId: { type: 'string' },
+              comparisonDatasetId: { type: 'string' },
+              columns: { type: 'array', items: { type: 'string' } },
+              method: { type: 'string', enum: ['ks', 'psi', 'wasserstein'] },
+              bins: { type: 'number' },
+            },
+            required: ['referenceDatasetId', 'comparisonDatasetId', 'columns', 'method'],
+          },
+        },
+      },
     ];
+
+    if (dataset && !dataset.metadata.predictionColumn) {
+      // For datasets lacking predictions, offer only valid dataset profiling and shift tools
+      return allTools.filter((t) =>
+        ['profile_dataset', 'scan_feature_leakage', 'run_drift_tests'].includes(t.function.name)
+      );
+    }
+
+    return allTools;
   }
 }

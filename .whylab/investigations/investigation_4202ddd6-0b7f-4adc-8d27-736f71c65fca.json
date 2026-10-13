@@ -1,55 +1,13 @@
 {
-  "schemaVersion": 2,
   "id": "investigation_4202ddd6-0b7f-4adc-8d27-736f71c65fca",
   "objective": "Investigate reliability risks and performance degradation on melanoma-synthetic.csv.",
   "status": "stopped",
-  "stopReason": "Investigation aborted by user.",
+  "datasetName": null,
+  "rowCount": null,
+  "evidenceCount": 0,
+  "hypothesisCount": 0,
+  "stage": "ingest",
+  "sourceKind": "uploaded_file",
   "createdAt": "2026-10-08T11:03:09.942Z",
-  "updatedAt": "2026-10-08T11:03:09.942Z",
-  "sources": [
-    {
-      "id": "source_e188a164-f082-43b4-aca2-b66243a3728b",
-      "kind": "uploaded_file",
-      "name": "melanoma-synthetic.csv",
-      "capturedAt": "2026-10-08T11:03:09.942Z",
-      "contentDigest": null
-    }
-  ],
-  "datasets": [
-    {
-      "id": "dataset_7487cfba-8fd5-4000-a0fe-d31493e11292",
-      "sourceId": "source_e188a164-f082-43b4-aca2-b66243a3728b",
-      "name": "melanoma-synthetic.csv",
-      "rowCount": 100,
-      "columns": [
-        "y_true",
-        "y_pred",
-        "y_probability"
-      ],
-      "role": "evaluation",
-      "task": "binary_classification",
-      "targetColumn": "y_true",
-      "predictionColumn": "y_pred",
-      "probabilityColumn": "y_probability",
-      "positiveLabel": "1"
-    }
-  ],
-  "evidence": [],
-  "toolCalls": [],
-  "toolResults": [],
-  "hypotheses": [],
-  "experiments": [],
-  "repairs": [],
-  "comparisons": [],
-  "events": [
-    {
-      "id": "event_225a16ef-1ff2-4124-a486-5c0a149dbd29",
-      "sequence": 1,
-      "at": "2026-10-08T11:03:09.942Z",
-      "kind": "dataset_registered",
-      "entityId": "dataset_7487cfba-8fd5-4000-a0fe-d31493e11292",
-      "message": "Dataset 'melanoma-synthetic.csv' (100 rows) registered from source 'melanoma-synthetic.csv'."
-    }
-  ],
-  "diagnosis": null
+  "updatedAt": "2026-10-08T11:03:09.942Z"
 }

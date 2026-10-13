@@ -1,0 +1,6 @@
+case_id,prompt,response,reference_answer,model_version,latency_ms,prompt_tokens,completion_tokens
+qa_101,"What is WhyLab 2.0?","WhyLab 2.0 is an ML reliability and autonomous failure investigation platform.","WhyLab 2.0 is an ML reliability and autonomous failure investigation platform.","claude-3-5-sonnet",280,18,17
+qa_102,"Does WhyLab automatically deploy models to production?","No, WhyLab strictly prohibits automated model deployments and requires human review for all repairs.","No, WhyLab strictly prohibits automated model deployments and enforces human gatekeeper approval.","claude-3-5-sonnet",310,22,20
+qa_103,"What formats are supported for LLM evaluation?","WhyLab supports JSONL, CSV, and JSON evaluation records.","WhyLab supports JSONL and CSV evaluation records.","claude-3-5-sonnet",245,15,12
+qa_104,"What is the Brier score of a perfect probabilistic model?","The Brier score of a perfectly calibrated and confident model is 0.0.","0.0","claude-3-5-sonnet",190,16,15
+qa_105,"Explain Kolmogorov-Smirnov test in one sentence.","The KS test measures the maximum distance between two empirical cumulative distribution functions.","The KS test measures the maximum vertical distance between two empirical cumulative distribution functions.","claude-3-5-sonnet",330,19,18

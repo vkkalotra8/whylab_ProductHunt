@@ -3,8 +3,8 @@ import { join } from 'node:path';
 import { NextRequest } from 'next/server';
 import { ingestEvaluationCsv, type ColumnMapping } from '@/core/diagnostics/evaluation-ingestion';
 import { runAutonomousInvestigation } from '@/server/orchestrator/investigator';
-import { OfflineInvestigatorProvider } from '@/server/orchestrator/provider-offline';
-import { OpenAIInvestigatorProvider } from '@/server/orchestrator/provider-openai';
+import { resolveInvestigatorProvider } from '@/server/orchestrator/provider-factory';
+import { ProviderConfigurationError } from '@/server/orchestrator/ai-config';
 import { createId } from '@/core/domain/primitives';
 import { apiRateLimiter, getClientIp } from '@/server/security/rate-limiter';
 import { sanitizeFileName, sanitizeInputText } from '@/server/security/sanitizer';
@@ -90,11 +90,18 @@ export async function POST(req: NextRequest) {
       labels: body.labels,
     });
 
-    const provider = body.offlineOnly
-      ? new OfflineInvestigatorProvider()
-      : process.env.OPENAI_API_KEY
-      ? new OpenAIInvestigatorProvider(process.env.OPENAI_API_KEY)
-      : new OfflineInvestigatorProvider();
+    let provider;
+    try {
+      provider = resolveInvestigatorProvider({ offlineOnly: body.offlineOnly });
+    } catch (configErr) {
+      if (configErr instanceof ProviderConfigurationError) {
+        return Response.json(
+          { error: configErr.message, code: configErr.code },
+          { status: 400 }
+        );
+      }
+      throw configErr;
+    }
 
     const stream = new ReadableStream({
       async start(controller) {

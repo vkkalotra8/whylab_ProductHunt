@@ -153,7 +153,12 @@ export function evaluateClassification(
   if (data.metadata.rowCount !== data.rows.length) {
     fail('$.rows', 'row count differs from dataset metadata');
   }
-  return computeClassificationMetrics(data);
+  const mappedRows = data.rows.map((r) => ({
+    actual: r.actual ?? '',
+    predicted: r.predicted ?? '',
+    positiveProbability: r.positiveProbability,
+  }));
+  return computeClassificationMetrics({ labels: data.labels, rows: mappedRows });
 }
 
 export function metricsFromConfusion(

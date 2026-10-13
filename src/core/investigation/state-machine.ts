@@ -46,26 +46,39 @@ export class InvalidStateTransitionError extends Error {
  * from its immutable evidence and artifact graph.
  */
 export function deriveInvestigationStage(inv: Investigation): InvestigationStage {
-  if (inv.datasets.length === 0) {
+  if (!inv || !inv.datasets || inv.datasets.length === 0) {
     return 'ingest';
   }
-  const hasBaselineMetrics = inv.evidence.some(
+  const evidence = inv.evidence || [];
+  const toolResults = inv.toolResults || [];
+  const hasBaselineEvidence = evidence.some(
     (e) =>
-      e.provenance.kind === 'tool_result' &&
-      inv.toolResults.some(
-        (r) => r.id === (e.provenance as { resultId: Id<'result'> }).resultId && r.tool === 'compute_classification_metrics'
+      e.provenance?.kind === 'tool_result' &&
+      toolResults.some(
+        (r) =>
+          r.id === (e.provenance as { resultId: Id<'result'> }).resultId &&
+          ((r.tool as string) === 'compute_classification_metrics' ||
+            (r.tool as string) === 'profile_dataset' ||
+            (r.tool as string) === 'scan_feature_leakage' ||
+            (r.tool as string) === 'evaluate_text_metrics' ||
+            (r.tool as string) === 'evaluate_rag_attribution' ||
+            (r.tool as string) === 'audit_image_quality' ||
+            (r.tool as string) === 'detect_exact_duplicates')
       )
   );
-  if (!hasBaselineMetrics) {
+  if (!hasBaselineEvidence) {
     return 'profile';
   }
-  if (inv.hypotheses.length === 0) {
+  if (inv.status === 'completed' && inv.diagnosis !== null) {
+    return 'report';
+  }
+  if (!inv.hypotheses || inv.hypotheses.length === 0) {
     return 'investigate';
   }
-  if (inv.experiments.length === 0) {
+  if (!inv.experiments || inv.experiments.length === 0) {
     return 'verify';
   }
-  if (inv.comparisons.length === 0) {
+  if (!inv.comparisons || inv.comparisons.length === 0) {
     return 'repair';
   }
   return 'report';

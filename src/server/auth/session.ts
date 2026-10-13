@@ -138,6 +138,8 @@ export async function getTenantContext(
         requestId,
       };
     }
+    // Token was provided but verification failed (tampered, expired, or invalid secret)
+    return null;
   }
 
   // Local development / testing fallback mode when auth is not explicitly enforced

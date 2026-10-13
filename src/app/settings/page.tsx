@@ -64,11 +64,11 @@ export default function SettingsPage() {
               </strong>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
-              <span className="badge badge-info">ORCHESTRATOR READY</span>
-              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>Responses API Protocol</span>
+              <span className="badge badge-info">MULTI-PROVIDER READY</span>
+              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>Gemini & OpenAI & Offline</span>
             </div>
             <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-              Governs tool dispatch, hypothesis ranking, and falsification experiments. Fallback to deterministic flagship mode occurs automatically if OpenAI credentials are not provided.
+              Governs tool dispatch, hypothesis ranking, and falsification experiments. Supports Google Gemini (Free / Pay-as-you-go) and OpenAI with automatic deterministic offline fallback when credentials are not configured.
             </p>
           </div>
         </div>
@@ -101,7 +101,22 @@ export default function SettingsPage() {
                   <tr>
                     <td>WHYLAB_AI_ENABLED</td>
                     <td>Optional</td>
-                    <td>Set to <code>true</code> to enable OpenAI Responses API live orchestration.</td>
+                    <td>Set to <code>true</code> to enable autonomous cloud AI orchestration.</td>
+                  </tr>
+                  <tr>
+                    <td>WHYLAB_AI_PROVIDER</td>
+                    <td>Optional</td>
+                    <td>Active AI provider: <code>gemini</code>, <code>openai</code>, or <code>offline</code>. Defaults to <code>gemini</code> when key present.</td>
+                  </tr>
+                  <tr>
+                    <td>GEMINI_API_KEY</td>
+                    <td>Conditional</td>
+                    <td>API key for Google Gemini (Google AI Studio Free tier). Kept strictly server-side.</td>
+                  </tr>
+                  <tr>
+                    <td>GEMINI_MODEL</td>
+                    <td>Optional</td>
+                    <td>Target Gemini model identifier (default: <code>gemini-3.8-flash</code>).</td>
                   </tr>
                   <tr>
                     <td>OPENAI_API_KEY</td>
@@ -110,8 +125,8 @@ export default function SettingsPage() {
                   </tr>
                   <tr>
                     <td>OPENAI_MODEL</td>
-                    <td>Conditional</td>
-                    <td>Target model supporting structured function calling (e.g., <code>gpt-4o</code> / <code>gpt-6-astra</code>).</td>
+                    <td>Optional</td>
+                    <td>Target OpenAI model supporting function calling (e.g., <code>gpt-4o</code>).</td>
                   </tr>
                   <tr>
                     <td>WHYLAB_ACCESS_TOKEN</td>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { CheckCircle2, GitCompare, ShieldCheck } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, GitCompare, ShieldCheck } from 'lucide-react';
 import type { SweepPoint } from './threshold-sweep-chart';
 
 export interface BeforeAfterTableProps {
@@ -10,6 +10,7 @@ export interface BeforeAfterTableProps {
   falseNegativeCost: number;
   falsePositiveCost: number;
   totalSamples: number;
+  validationMode?: 'single_cohort_optimization' | 'independent_holdout_validated';
 }
 
 export default function BeforeAfterTable({
@@ -18,6 +19,7 @@ export default function BeforeAfterTable({
   falseNegativeCost,
   falsePositiveCost,
   totalSamples,
+  validationMode = 'single_cohort_optimization',
 }: BeforeAfterTableProps) {
   const calculations = useMemo(() => {
     const baseConf = baselinePoint.confusion;
@@ -107,6 +109,11 @@ export default function BeforeAfterTable({
             <CheckCircle2 size={12} />
             Identical-Row Evaluation
           </span>
+          {validationMode === 'independent_holdout_validated' ? (
+            <span className="badge badge-success">Holdout Generalization</span>
+          ) : (
+            <span className="badge badge-warning">Optimization Cohort (Not Holdout)</span>
+          )}
           <span className="badge badge-info">100% Deterministic Math</span>
         </div>
       </div>
@@ -131,6 +138,45 @@ export default function BeforeAfterTable({
           <strong>{totalSamples.toLocaleString()}</strong> rows. Zero synthetic interpolation or simulated rows.
         </span>
       </div>
+
+      {/* Scientific Holdout Safeguard Notice */}
+      {validationMode === 'independent_holdout_validated' ? (
+        <div
+          style={{
+            padding: 'var(--space-3) var(--space-4)',
+            backgroundColor: 'rgba(16, 185, 129, 0.05)',
+            borderBottom: '1px solid var(--border-subtle)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--space-2)',
+            fontSize: 'var(--text-xs)',
+            color: '#065f46',
+          }}
+        >
+          <CheckCircle2 size={14} style={{ color: '#10b981', flexShrink: 0 }} />
+          <span>
+            <strong>Holdout Generalization Verified:</strong> Operating cutoff validated against an independent holdout partition. Reported metrics reflect out-of-sample generalization.
+          </span>
+        </div>
+      ) : (
+        <div
+          style={{
+            padding: 'var(--space-3) var(--space-4)',
+            backgroundColor: 'rgba(245, 158, 11, 0.08)',
+            borderBottom: '1px solid var(--border-subtle)',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: 'var(--space-2)',
+            fontSize: 'var(--text-xs)',
+            color: '#92400e',
+          }}
+        >
+          <AlertTriangle size={14} style={{ color: '#f59e0b', marginTop: '2px', flexShrink: 0 }} />
+          <span>
+            <strong>Scientific Safeguard Notice (Optimization Cohort — Not Holdout):</strong> Threshold discovery and re-evaluation were conducted on the identical evaluation cohort. While the metrics accurately reflect the operating cutoff change on this sample, out-of-sample generalization may be lower due to optimization variance. Evaluation against an independent prospective holdout partition is strongly recommended prior to production deployment.
+          </span>
+        </div>
+      )}
 
       {/* Comparison Table */}
       <div className="card-body" style={{ padding: 0 }}>

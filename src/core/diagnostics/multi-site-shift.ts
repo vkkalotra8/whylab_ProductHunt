@@ -188,7 +188,12 @@ export function analyzeMultiSiteShift(
       floorViolations.push({ site: siteName, sampleSize: rows.length, floor });
     }
 
-    const metricsReport = computeClassificationMetrics({ labels: data.labels, rows });
+    const mappedRows = rows.map((r) => ({
+      actual: r.actual ?? '',
+      predicted: r.predicted ?? '',
+      positiveProbability: r.positiveProbability,
+    }));
+    const metricsReport = computeClassificationMetrics({ labels: data.labels, rows: mappedRows });
     const getMetric = (name: string): number | null => {
       const m = metricsReport.output.metrics.find((x) => x.name === name);
       return m && m.status === 'measured' ? m.value : null;

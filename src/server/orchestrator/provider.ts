@@ -26,7 +26,13 @@ export interface ProviderTurnRequest {
   availableTools: readonly ToolName[];
 }
 
-export type ProviderTurnResponse =
+export interface TokenUsage {
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+}
+
+export type ProviderTurnResponse = (
   | {
       action: 'propose_hypothesis';
       statement: string;
@@ -47,9 +53,17 @@ export type ProviderTurnResponse =
       confidenceLevel: 'unassessed' | 'limited' | 'moderate' | 'strong';
       confidenceRationale: string;
       limitations: string[];
-    };
+    }
+) & {
+  usage?: TokenUsage;
+  provider?: string;
+  model?: string;
+};
 
 export interface InvestigatorProvider {
   readonly name: string;
+  readonly model?: string;
   nextStep(request: ProviderTurnRequest): Promise<ProviderTurnResponse>;
+  getLastUsage?(): TokenUsage | null;
+  getCumulativeUsage?(): TokenUsage;
 }

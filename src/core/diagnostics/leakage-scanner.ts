@@ -33,11 +33,17 @@ export function scanFeatureLeakage(
   const request = toolSchemas.scan_feature_leakage.input.parse(input);
   profileEvaluationDataset(data, { datasetId: request.datasetId, targetColumn: request.targetColumn });
 
-  if (request.targetColumn !== 'y_true') {
-    fail('$.targetColumn', 'this binary evaluation scanner requires y_true as the target');
+  if (request.targetColumn !== data.metadata.targetColumn) {
+    fail('$.targetColumn', `scanner target column (${request.targetColumn}) does not match dataset target (${data.metadata.targetColumn})`);
   }
+  const excludedCols = [
+    data.metadata.targetColumn,
+    data.metadata.predictionColumn,
+    data.metadata.probabilityColumn,
+  ].filter((c): c is string => c !== null);
+
   for (const name of request.featureColumns) {
-    if (['y_true', 'y_pred', 'y_probability'].includes(name)) {
+    if (excludedCols.includes(name)) {
       fail('$.featureColumns', 'target and model output columns cannot be scanned as input features');
     }
     if (!data.metadata.columns.includes(name)) {
@@ -47,7 +53,7 @@ export function scanFeatureLeakage(
   for (const name of [request.predictionTimeColumn, request.outcomeTimeColumn]) {
     if (
       name !== null &&
-      (!data.metadata.columns.includes(name) || ['y_true', 'y_pred', 'y_probability'].includes(name))
+      (!data.metadata.columns.includes(name) || excludedCols.includes(name))
     ) {
       fail('$.timeColumns', 'time columns must name optional metadata columns');
     }

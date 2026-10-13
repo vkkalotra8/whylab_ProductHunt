@@ -6,6 +6,7 @@ import ThresholdSweepChart, { type SweepPoint } from './threshold-sweep-chart';
 import CostMatrixControls from './cost-matrix-controls';
 import BeforeAfterTable from './before-after-table';
 import PolicyExporter from './policy-exporter';
+import MultimodalRepairLab from './multimodal-repair-lab';
 import {
   AlertTriangle,
   ArrowRight,
@@ -15,6 +16,8 @@ import {
   RotateCcw,
   Sliders,
   Sparkles,
+  Layers,
+  Cpu,
 } from 'lucide-react';
 
 export interface RepairWorkbenchProps {
@@ -40,6 +43,7 @@ export default function RepairWorkbench({ investigation, initialPoints }: Repair
       : null;
 
   const [dynamicPoints, setDynamicPoints] = useState<SweepPoint[] | null>(initialPoints ?? null);
+  const [viewMode, setViewMode] = useState<'threshold_sweep' | 'multimodal'>('threshold_sweep');
 
   // If points are missing from investigation toolResults and initialPoints, fetch dynamically from /api/repair
   useEffect(() => {
@@ -151,6 +155,24 @@ export default function RepairWorkbench({ investigation, initialPoints }: Repair
     { label: 'Unadjusted Baseline', threshold: 0.5, badge: '0.50' },
   ];
 
+  if (viewMode === 'multimodal') {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '-8px' }}>
+          <button
+            type="button"
+            onClick={() => setViewMode('threshold_sweep')}
+            className="btn btn-secondary btn-sm"
+            style={{ fontSize: 'var(--text-xs)' }}
+          >
+            ← Return to 101-Point Tabular Sweep
+          </button>
+        </div>
+        <MultimodalRepairLab investigation={investigation} initialPoints={initialPoints} defaultModality="tabular" />
+      </div>
+    );
+  }
+
   if (!hasProbabilities) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
@@ -173,17 +195,26 @@ export default function RepairWorkbench({ investigation, initialPoints }: Repair
           </h2>
           <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', lineHeight: 1.6, maxWidth: '960px', marginBottom: 'var(--space-4)' }}>
             Dataset <code>{datasetName}</code> was ingested with discrete predicted labels only, without continuous confidence probabilities (<code>y_probability</code>).
-            Decision threshold sweeping, ROC/PR curve exploration, and cost-matrix operating point re-calibration require continuous probability scores between 0.0 and 1.0.
+            Decision threshold sweeping requires continuous probability scores between 0.0 and 1.0.
           </p>
-          <div className="card" style={{ padding: 'var(--space-4)', backgroundColor: 'var(--bg-surface)' }}>
+          <div className="card" style={{ padding: 'var(--space-4)', backgroundColor: 'var(--bg-surface)', marginBottom: 'var(--space-4)' }}>
             <strong style={{ fontSize: 'var(--text-xs)', color: 'var(--text-primary)', display: 'block', marginBottom: 'var(--space-2)' }}>
               Recommended Remediation Actions:
             </strong>
             <ul style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', margin: 0, paddingLeft: 'var(--space-4)', lineHeight: 1.6 }}>
-              <li><strong>Model Retraining:</strong> Retrain with class-weighted loss (e.g. <code>class_weight=&apos;balanced&apos;</code>) or focal loss to penalize minority false negatives directly during training.</li>
-              <li><strong>Probability Export:</strong> Export raw prediction probabilities or decision function margins from your model (e.g. <code>predict_proba</code> in scikit-learn or sigmoid output in PyTorch) to unlock post-hoc threshold sweeping.</li>
-              <li><strong>Data Resampling:</strong> Apply SMOTE, minority oversampling, or majority undersampling to equalize class representation.</li>
+              <li><strong>Model Retraining:</strong> Retrain with class-weighted loss (e.g. <code>class_weight=&apos;balanced&apos;</code>) to penalize minority false negatives directly.</li>
+              <li><strong>Probability Export:</strong> Export raw prediction probabilities from your model (e.g. <code>predict_proba</code>).</li>
+              <li><strong>Multi-Modal Guardrails:</strong> Configure prompt patches, schema retries, or image quality filters in the Multi-Modal Lab.</li>
             </ul>
+          </div>
+          <div>
+            <button
+              type="button"
+              onClick={() => setViewMode('multimodal')}
+              className="btn btn-primary btn-sm"
+            >
+              Open Multi-Modal Repair Studio
+            </button>
           </div>
         </div>
       </div>
@@ -220,7 +251,15 @@ export default function RepairWorkbench({ investigation, initialPoints }: Repair
             <span className="badge badge-info">Identical Rows Evaluation</span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+            <button
+              type="button"
+              onClick={() => setViewMode('multimodal')}
+              className="btn btn-secondary btn-sm"
+              style={{ fontSize: 'var(--text-xs)' }}
+            >
+              Multi-Modal Studio (LLM / CV)
+            </button>
             <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>Status:</span>
             <strong style={{ fontSize: 'var(--text-xs)', color: '#10b981', fontFamily: 'var(--font-mono)' }}>
               {primaryComparison?.status.toUpperCase() ?? 'PASSED'}
@@ -443,6 +482,14 @@ export default function RepairWorkbench({ investigation, initialPoints }: Repair
             falseNegativeCost={falseNegativeCost}
             falsePositiveCost={falsePositiveCost}
             totalSamples={totalSamples}
+            validationMode={
+              (investigation.datasets?.length ?? 0) > 1 &&
+              (investigation.datasets?.some(
+                (d) => d.role === 'validation' || d.role === 'reference' || d.name?.toLowerCase().includes('holdout') || d.name?.toLowerCase().includes('test')
+              ) ?? false)
+                ? 'independent_holdout_validated'
+                : 'single_cohort_optimization'
+            }
           />
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

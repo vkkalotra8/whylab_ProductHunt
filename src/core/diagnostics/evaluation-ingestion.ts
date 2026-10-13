@@ -9,6 +9,7 @@ import {
   type ColumnSummaryStats,
   type DatasetPreview,
 } from './capability.ts';
+import { computeDatasetCapabilityManifest } from '../domain/capability-contracts.ts';
 
 export const EVALUATION_LIMITS = Object.freeze({
   bytes: 2_000_000,
@@ -61,11 +62,11 @@ function reject(code: EvaluationIssue['code'], message: string): never {
 }
 
 export type ColumnMapping = {
-  targetColumn?: string;
-  predictionColumn?: string;
+  targetColumn?: string | null;
+  predictionColumn?: string | null;
   probabilityColumn?: string | null;
   sliceColumns?: string[];
-  idColumn?: string;
+  idColumn?: string | null;
 };
 
 export type EvaluationOptions = {
@@ -77,8 +78,8 @@ export type EvaluationOptions = {
 
 export type EvaluationRow = {
   sourceRow: number;
-  actual: string;
-  predicted: string;
+  actual: string | null;
+  predicted: string | null;
   positiveProbability: number | null;
   attributes: Record<string, string | null>;
 };
@@ -90,6 +91,7 @@ export type EvaluationDataset = {
   labels: { positive: string; negative: string };
   rows: EvaluationRow[];
   warnings: string[];
+  capabilityManifest?: import('../domain/capability-contracts.ts').DatasetCapabilityManifest;
 };
 
 /**
@@ -211,6 +213,7 @@ export function previewEvaluationCsv(text: string, name: string): DatasetPreview
     detectedLabels,
     capabilities,
     validationIssues,
+    manifest: capabilities.manifest,
   };
 }
 
@@ -267,22 +270,22 @@ export function ingestEvaluationCsv(
 
   // Resolve column mappings
   const mapping = options.columnMapping;
-  let targetCol = mapping?.targetColumn;
-  let predCol = mapping?.predictionColumn;
+  let targetCol: string | null | undefined = mapping?.targetColumn;
+  let predCol: string | null | undefined = mapping?.predictionColumn;
   let probCol: string | null = mapping?.probabilityColumn !== undefined ? mapping.probabilityColumn : null;
 
   // If mapping not explicitly provided, attempt auto-resolution
-  if (!targetCol || !predCol) {
+  if (targetCol === undefined || predCol === undefined) {
     if (headers.includes('y_true') && headers.includes('y_pred')) {
-      targetCol = 'y_true';
-      predCol = 'y_pred';
+      if (targetCol === undefined) targetCol = 'y_true';
+      if (predCol === undefined) predCol = 'y_pred';
       if (probCol === null && headers.includes('y_probability')) {
         probCol = 'y_probability';
       }
     } else {
       const inferred = inferColumnMapping(headers);
-      targetCol = targetCol ?? inferred.targetColumn ?? 'y_true';
-      predCol = predCol ?? inferred.predictionColumn ?? 'y_pred';
+      if (targetCol === undefined) targetCol = inferred.targetColumn;
+      if (predCol === undefined) predCol = inferred.predictionColumn;
       if (probCol === null && inferred.probabilityColumn) {
         probCol = inferred.probabilityColumn;
       }
@@ -291,10 +294,10 @@ export function ingestEvaluationCsv(
     probCol = 'y_probability';
   }
 
-  // Validate required target and prediction columns exist
+  // Validate required target and prediction columns exist (if explicitly mapped/non-null)
   const missingCols: string[] = [];
-  if (!headers.includes(targetCol)) missingCols.push(targetCol);
-  if (!headers.includes(predCol)) missingCols.push(predCol);
+  if (targetCol && !headers.includes(targetCol)) missingCols.push(targetCol);
+  if (predCol && !headers.includes(predCol)) missingCols.push(predCol);
   if (probCol !== null && !headers.includes(probCol)) missingCols.push(probCol);
 
   if (missingCols.length > 0) {
@@ -308,8 +311,8 @@ export function ingestEvaluationCsv(
     );
   }
 
-  const targetIdx = headers.indexOf(targetCol);
-  const predIdx = headers.indexOf(predCol);
+  const targetIdx = targetCol ? headers.indexOf(targetCol) : -1;
+  const predIdx = predCol ? headers.indexOf(predCol) : -1;
   const probIdx = probCol !== null ? headers.indexOf(probCol) : -1;
 
   // Determine or validate class labels
@@ -318,12 +321,16 @@ export function ingestEvaluationCsv(
     : undefined;
 
   if (!labels) {
-    const targetValues = data
-      .map((row) => row[targetIdx])
-      .filter((v) => !missing(v));
-    const inferred = inferBinaryLabels(targetValues);
-    if (inferred) {
-      labels = { positive: inferred.positive, negative: inferred.negative };
+    if (targetIdx !== -1) {
+      const targetValues = data
+        .map((row) => row[targetIdx])
+        .filter((v) => !missing(v));
+      const inferred = inferBinaryLabels(targetValues);
+      if (inferred) {
+        labels = { positive: inferred.positive, negative: inferred.negative };
+      } else {
+        labels = { positive: '1', negative: '0' };
+      }
     } else {
       labels = { positive: '1', negative: '0' };
     }
@@ -354,7 +361,11 @@ export function ingestEvaluationCsv(
     reject('configuration', 'Invalid dataset or source identifier.');
   }
 
-  const coreColIndices = new Set([targetIdx, predIdx, ...(probIdx !== -1 ? [probIdx] : [])]);
+  const coreColIndices = new Set([
+    ...(targetIdx !== -1 ? [targetIdx] : []),
+    ...(predIdx !== -1 ? [predIdx] : []),
+    ...(probIdx !== -1 ? [probIdx] : []),
+  ]);
   const extraCols = headers
     .map((name, index) => ({ name, index }))
     .filter((c) => !coreColIndices.has(c.index));
@@ -372,21 +383,25 @@ export function ingestEvaluationCsv(
 
   for (const [index, record] of data.entries()) {
     const sourceRow = index + 1;
-    const actual = record[targetIdx];
-    const predicted = record[predIdx];
+    const actual = targetIdx !== -1 ? record[targetIdx] : null;
+    const predicted = predIdx !== -1 ? record[predIdx] : null;
     const rawProbability = probIdx !== -1 ? record[probIdx] : null;
     const before = totalIssues;
 
-    if (missing(actual)) {
-      add('missing_value', sourceRow, targetCol, 'A ground-truth class label is required; rows are not silently dropped.');
-    } else if (actual !== labels.positive && actual !== labels.negative) {
-      add('label', sourceRow, targetCol, `Label '${actual}' is outside configured positive/negative pair ('${labels.positive}', '${labels.negative}'). Check spelling and case.`);
+    if (targetIdx !== -1) {
+      if (missing(actual)) {
+        add('missing_value', sourceRow, targetCol!, 'A ground-truth class label is required; rows are not silently dropped.');
+      } else if (actual !== labels.positive && actual !== labels.negative) {
+        add('label', sourceRow, targetCol!, `Label '${actual}' is outside configured positive/negative pair ('${labels.positive}', '${labels.negative}'). Check spelling and case.`);
+      }
     }
 
-    if (missing(predicted)) {
-      add('missing_value', sourceRow, predCol, 'A predicted class label is required; rows are not silently dropped.');
-    } else if (predicted !== labels.positive && predicted !== labels.negative) {
-      add('label', sourceRow, predCol, `Predicted label '${predicted}' is outside configured positive/negative pair ('${labels.positive}', '${labels.negative}'). Check spelling and case.`);
+    if (predIdx !== -1) {
+      if (missing(predicted)) {
+        add('missing_value', sourceRow, predCol!, 'A predicted class label is required; rows are not silently dropped.');
+      } else if (predicted !== labels.positive && predicted !== labels.negative) {
+        add('label', sourceRow, predCol!, `Predicted label '${predicted}' is outside configured positive/negative pair ('${labels.positive}', '${labels.negative}'). Check spelling and case.`);
+      }
     }
 
     let probability: number | null = null;
@@ -417,7 +432,7 @@ export function ingestEvaluationCsv(
     );
 
     if (totalIssues === before) {
-      actualLabels.add(actual);
+      if (actual !== null) actualLabels.add(actual);
       rows.push({
         sourceRow,
         actual,
@@ -436,7 +451,7 @@ export function ingestEvaluationCsv(
       `${probCol} is interpreted as the probability of the configured positive label (${labels.positive}). This semantic mapping cannot be verified from the CSV alone.`
     );
     warnings.push(
-      `Supplied ${predCol} values are preserved; no decision threshold is inferred from probabilities.`
+      `Supplied ${predCol ?? 'predictions'} values are preserved; no decision threshold is inferred from probabilities.`
     );
   } else {
     warnings.push(
@@ -465,6 +480,15 @@ export function ingestEvaluationCsv(
     contentDigest: null,
   });
 
+  const detectedTask: 'binary_classification' | 'multiclass_classification' | 'regression' | 'unsupervised_profiling' | 'prediction_audit' | 'unknown' =
+    targetCol && predCol
+      ? 'binary_classification'
+      : targetCol
+      ? 'binary_classification'
+      : predCol
+      ? 'prediction_audit'
+      : 'unsupervised_profiling';
+
   const metadata = datasetMetadataSchema.parse({
     id: datasetId,
     sourceId,
@@ -472,12 +496,38 @@ export function ingestEvaluationCsv(
     rowCount: rows.length,
     columns: headers,
     role: 'evaluation',
-    task: 'binary_classification',
-    targetColumn: targetCol,
-    predictionColumn: predCol,
-    probabilityColumn: probCol,
+    task: detectedTask,
+    targetColumn: targetCol ?? null,
+    predictionColumn: predCol ?? null,
+    probabilityColumn: probCol ?? null,
     positiveLabel: labels.positive,
   });
 
-  return { schemaVersion: 1, metadata, source, labels: { ...labels }, rows, warnings };
+  const capabilityManifest = computeDatasetCapabilityManifest({
+    modality: 'tabular',
+    task: detectedTask,
+    rowCount: rows.length,
+    columns: headers,
+    roles: {
+      targetColumn: targetCol ?? null,
+      predictionColumn: predCol ?? null,
+      probabilityColumn: probCol ?? null,
+      idColumn: mapping?.idColumn ?? null,
+      timestampColumn: headers.find((c) => /timestamp|datetime|date/i.test(c)) ?? null,
+      sliceColumns: mapping?.sliceColumns ?? [],
+      featureColumns: extraCols.map((c) => c.name),
+    },
+    hasValidProbabilities: probCol !== null,
+    isBinaryLabels: actualLabels.size <= 2,
+  });
+
+  return {
+    schemaVersion: 1,
+    metadata,
+    source,
+    labels: { ...labels },
+    rows,
+    warnings,
+    capabilityManifest,
+  };
 }

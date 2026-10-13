@@ -33,20 +33,21 @@ export function profileEvaluationDataset(
     fail('$.rows', 'expected nonempty rows matching metadata within ingestion limits');
   }
   if (
-    !metadata.targetColumn ||
-    !metadata.predictionColumn ||
+    metadata.targetColumn &&
+    metadata.predictionColumn &&
     metadata.task !== 'binary_classification'
   ) {
     fail('$.metadata', 'expected normalized binary evaluation columns with target and prediction');
   }
   if (
-    !data.labels ||
-    typeof data.labels.positive !== 'string' ||
-    typeof data.labels.negative !== 'string' ||
-    !data.labels.positive ||
-    !data.labels.negative ||
-    data.labels.positive === data.labels.negative ||
-    metadata.positiveLabel !== data.labels.positive
+    metadata.targetColumn &&
+    (!data.labels ||
+      typeof data.labels.positive !== 'string' ||
+      typeof data.labels.negative !== 'string' ||
+      !data.labels.positive ||
+      !data.labels.negative ||
+      data.labels.positive === data.labels.negative ||
+      metadata.positiveLabel !== data.labels.positive)
   ) {
     fail('$.labels', 'invalid label configuration');
   }
@@ -62,8 +63,10 @@ export function profileEvaluationDataset(
     if (
       !row ||
       row.sourceRow !== i + 1 ||
-      ![data.labels.positive, data.labels.negative].includes(row.actual) ||
-      ![data.labels.positive, data.labels.negative].includes(row.predicted) ||
+      (metadata.targetColumn !== null &&
+        (row.actual === null || ![data.labels.positive, data.labels.negative].includes(row.actual))) ||
+      (metadata.predictionColumn !== null &&
+        (row.predicted === null || ![data.labels.positive, data.labels.negative].includes(row.predicted))) ||
       (row.positiveProbability !== null &&
         (typeof row.positiveProbability !== 'number' ||
           !Number.isFinite(row.positiveProbability) ||
@@ -93,12 +96,12 @@ export function profileEvaluationDataset(
   const columns = metadata.columns.map((name) => {
     const values = data.rows.map((row) =>
       name === metadata.targetColumn
-        ? row.actual
+        ? (row.actual ?? '')
         : name === metadata.predictionColumn
-        ? row.predicted
+        ? (row.predicted ?? '')
         : name === metadata.probabilityColumn
         ? (row.positiveProbability !== null ? String(row.positiveProbability) : '')
-        : row.attributes[name] ?? ''
+        : (row.attributes[name] ?? '')
     );
     const summary = summarizeColumn(values);
     const role: ToolOutput<'profile_dataset'>['columns'][number]['role'] =

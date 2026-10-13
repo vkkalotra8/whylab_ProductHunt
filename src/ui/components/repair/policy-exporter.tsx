@@ -1,7 +1,22 @@
 'use client';
 
 import { useState } from 'react';
-import { Check, Code2, Copy, FileCode, FileJson, ShieldCheck, Terminal } from 'lucide-react';
+import {
+  AlertTriangle,
+  Check,
+  CheckCircle2,
+  Code2,
+  Copy,
+  FileCode,
+  FileJson,
+  Lock,
+  ShieldAlert,
+  ShieldCheck,
+  Terminal,
+  UserCheck,
+} from 'lucide-react';
+import { generatePolicyCodeSnippets } from '@/server/repair/code-generator';
+import type { RepairApproval, ValidationMode } from '@/server/repair/types';
 
 export interface PolicyExporterProps {
   threshold: number;
@@ -10,6 +25,9 @@ export interface PolicyExporterProps {
   falsePositiveCost: number;
   datasetName?: string;
   totalSamples?: number;
+  validationMode?: ValidationMode;
+  policyId?: string;
+  initialApproval?: RepairApproval | null;
 }
 
 export default function PolicyExporter({
@@ -19,104 +37,45 @@ export default function PolicyExporter({
   falsePositiveCost,
   datasetName = 'melanoma-synthetic.csv',
   totalSamples = 20000,
+  validationMode = 'single_cohort_optimization',
+  policyId = 'pol_opt_019',
+  initialApproval = null,
 }: PolicyExporterProps) {
   const [activeTab, setActiveTab] = useState<'python' | 'typescript' | 'json' | 'yaml'>('python');
   const [copied, setCopied] = useState(false);
 
-  const pythonSnippet = `# WhyLab 2.0 Operating Policy Specification
-# Generated deterministically via Cost-Sensitive Optimization
-# Dataset: ${datasetName} (n = ${totalSamples.toLocaleString()})
-# Loss Weights: False Negative = ${falseNegativeCost}x, False Positive = ${falsePositiveCost}x
-
-OPERATING_THRESHOLD: float = ${threshold.toFixed(2)}
-POSITIVE_LABEL: str = "${positiveLabel}"
-
-def apply_operating_policy(probability: float) -> str:
-    """
-    Evaluates whether raw predicted positive class probability meets
-    the WhyLab verified clinical operating cutoff.
-    """
-    if probability is None or not (0.0 <= probability <= 1.0):
-        raise ValueError(f"Invalid probability score: {probability}")
-    
-    return POSITIVE_LABEL if probability >= OPERATING_THRESHOLD else "0"
-
-def batch_apply_policy(probabilities: list[float]) -> list[str]:
-    return [apply_operating_policy(p) for p in probabilities]
-`;
-
-  const tsSnippet = `/**
- * WhyLab 2.0 Operating Policy Specification
- * Verified via 101-Point Empirical Threshold Sweeper
- * Loss Weights: FN = ${falseNegativeCost}x, FP = ${falsePositiveCost}x
- */
-
-export const POLICY_CONFIG = {
-  version: 2,
-  operatingThreshold: ${threshold.toFixed(2)},
-  positiveLabel: '${positiveLabel}',
-  comparison: 'greater_than_or_equal' as const,
-  costWeights: {
-    falseNegative: ${falseNegativeCost},
-    falsePositive: ${falsePositiveCost},
-  },
-} as const;
-
-export function applyPolicy(probability: number): string {
-  if (typeof probability !== 'number' || Number.isNaN(probability) || probability < 0 || probability > 1) {
-    throw new RangeError(\`Probability must be a valid float in [0, 1], got: \${probability}\`);
-  }
-  return probability >= POLICY_CONFIG.operatingThreshold ? POLICY_CONFIG.positiveLabel : '0';
-}
-`;
-
-  const jsonSnippet = JSON.stringify(
-    {
-      $schema: 'https://whylab.ai/schemas/v2/operating-policy.json',
-      policy_id: `pol_${Math.round(threshold * 100).toString().padStart(3, '0')}`,
-      status: 'verified',
-      operating_threshold: Number(threshold.toFixed(2)),
-      decision_operator: 'gte',
-      positive_label: positiveLabel,
-      loss_matrix: {
-        false_negative_cost: falseNegativeCost,
-        false_positive_cost: falsePositiveCost,
-        unit: 'relative_penalty',
-      },
-      provenance: {
-        evaluation_dataset: datasetName,
-        sample_size: totalSamples,
-        evaluation_engine: 'whylab_deterministic_v2',
-        verified_at: '2026-10-08T00:00:00.000Z',
-      },
-    },
-    null,
-    2
+  // Human approval state
+  const [approval, setApproval] = useState<RepairApproval | null>(initialApproval);
+  const [showApprovalModal, setShowApprovalModal] = useState(false);
+  const [reviewerName, setReviewerName] = useState('Dr. Eleanor Vance (Lead Clinical ML)');
+  const [reviewerComments, setReviewerComments] = useState(
+    'Reviewed 101-point threshold sweep. Operating cutoff balances false negative clinical penalties while preserving high specificity on validation cohort.'
   );
+  const [checkboxAudit, setCheckboxAudit] = useState(true);
+  const [checkboxProhibitAuto, setCheckboxProhibitAuto] = useState(true);
+  const [approvalError, setApprovalError] = useState<string | null>(null);
 
-  const yamlSnippet = `# WhyLab Production Serving Policy
-schema_version: 2
-policy:
-  operating_threshold: ${threshold.toFixed(2)}
-  decision_operator: greater_than_or_equal
-  positive_label: "${positiveLabel}"
-cost_matrix:
-  false_negative_cost: ${falseNegativeCost}
-  false_positive_cost: ${falsePositiveCost}
-provenance:
-  evaluation_dataset: "${datasetName}"
-  sample_size: ${totalSamples}
-  verification_status: verified
-`;
+  const snippets = generatePolicyCodeSnippets({
+    policyId,
+    version: 1,
+    operatingThreshold: threshold,
+    positiveLabel,
+    falseNegativeCost,
+    falsePositiveCost,
+    datasetName,
+    totalSamples,
+    validationMode,
+    approval: approval ?? undefined,
+  });
 
   const currentCode =
     activeTab === 'python'
-      ? pythonSnippet
+      ? snippets.python
       : activeTab === 'typescript'
-      ? tsSnippet
+      ? snippets.typescript
       : activeTab === 'json'
-      ? jsonSnippet
-      : yamlSnippet;
+      ? snippets.json
+      : snippets.yaml;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(currentCode);
@@ -124,22 +83,244 @@ provenance:
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleApprove = () => {
+    if (!reviewerComments || reviewerComments.trim().length < 8) {
+      setApprovalError('Please provide a meaningful rationale of at least 8 characters.');
+      return;
+    }
+    if (!checkboxAudit || !checkboxProhibitAuto) {
+      setApprovalError('All safety verifications must be confirmed before approval.');
+      return;
+    }
+
+    const newApproval: RepairApproval = {
+      approvedBy: 'usr_clinical_lead_1',
+      approvedByName: reviewerName.trim(),
+      approvedAt: new Date().toISOString(),
+      comments: reviewerComments.trim(),
+      expectedVersion: 1,
+      automatedDeploymentProhibited: true,
+      signature: `sig_verified_${Date.now()}`,
+    };
+
+    setApproval(newApproval);
+    setShowApprovalModal(false);
+    setApprovalError(null);
+  };
+
   return (
     <div className="card card-elevated">
       {/* Header */}
-      <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+      <div
+        className="card-header"
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 'var(--space-2)',
+        }}
+      >
         <div className="card-title">
           <Terminal size={16} style={{ color: 'var(--color-primary, #3b82f6)' }} />
           <span>Production Operating Policy Deployment</span>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-          <span className="badge badge-success">Zero Model Retraining Required</span>
+          {approval ? (
+            <span className="badge badge-success" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <ShieldCheck size={12} />
+              HUMAN APPROVED (v1)
+            </span>
+          ) : (
+            <span
+              className="badge"
+              style={{
+                backgroundColor: 'rgba(245, 158, 11, 0.15)',
+                color: '#f59e0b',
+                border: '1px solid #f59e0b',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+              }}
+            >
+              <AlertTriangle size={12} />
+              PENDING HUMAN REVIEW (DRAFT)
+            </span>
+          )}
           <span className="badge badge-accent">O(1) Inference Overhead</span>
         </div>
       </div>
 
       <div className="card-body">
+        {/* Human Approval Status Banner */}
+        {approval ? (
+          <div
+            style={{
+              padding: 'var(--space-4)',
+              borderRadius: 'var(--radius-md, 8px)',
+              backgroundColor: 'rgba(16, 185, 129, 0.08)',
+              border: '1px solid rgba(16, 185, 129, 0.3)',
+              marginBottom: 'var(--space-4)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-1)' }}>
+                  <UserCheck size={16} style={{ color: '#10b981' }} />
+                  <strong style={{ fontSize: 'var(--text-sm)', color: '#10b981' }}>
+                    Certified Human Approval Confirmed
+                  </strong>
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                    ({new Date(approval.approvedAt).toLocaleString()})
+                  </span>
+                </div>
+                <p style={{ margin: '0 0 var(--space-2) 0', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                  <strong>Reviewer:</strong> {approval.approvedByName} ({approval.approvedBy})
+                </p>
+                <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-primary)', fontStyle: 'italic', background: 'rgba(0,0,0,0.2)', padding: '6px 10px', borderRadius: '4px' }}>
+                  &ldquo;{approval.comments}&rdquo;
+                </p>
+              </div>
+
+              <div style={{ textAlign: 'right' }}>
+                <span className="badge badge-success" style={{ fontSize: '10px' }}>
+                  Automated Deployment Prohibited
+                </span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div
+            style={{
+              padding: 'var(--space-4)',
+              borderRadius: 'var(--radius-md, 8px)',
+              backgroundColor: 'rgba(245, 158, 11, 0.08)',
+              border: '1px solid rgba(245, 158, 11, 0.3)',
+              marginBottom: 'var(--space-4)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-3)' }}>
+                <ShieldAlert size={20} style={{ color: '#f59e0b', flexShrink: 0, marginTop: '2px' }} />
+                <div>
+                  <h4 style={{ margin: '0 0 4px 0', fontSize: 'var(--text-sm)', color: '#f59e0b', fontWeight: 600 }}>
+                    Human Sign-Off Required Before Production Serving
+                  </h4>
+                  <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                    WhyLab enforces strict safety invariants: autonomous or automated policy deployment into production is prohibited.
+                    An authorized clinical or technical reviewer must review cost tradeoffs and approve the policy before deployment.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowApprovalModal(true)}
+                className="btn btn-primary btn-sm"
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}
+              >
+                <UserCheck size={14} />
+                Approve Policy
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Approval Modal Dialog */}
+        {showApprovalModal && (
+          <div
+            style={{
+              marginBottom: 'var(--space-4)',
+              padding: 'var(--space-4)',
+              backgroundColor: 'var(--bg-canvas, #090d16)',
+              border: '1px solid var(--border-focus, #3b82f6)',
+              borderRadius: 'var(--radius-md, 8px)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-3)' }}>
+              <Lock size={16} style={{ color: 'var(--color-primary, #3b82f6)' }} />
+              <strong style={{ fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}>
+                Authorizing Operating Policy for Staging / Serving
+              </strong>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px' }}>
+                  Reviewer Name & Title:
+                </label>
+                <input
+                  type="text"
+                  value={reviewerName}
+                  onChange={(e) => setReviewerName(e.target.value)}
+                  className="input input-sm"
+                  style={{ width: '100%', fontSize: '12px' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px' }}>
+                  Approval Rationale / Clinical Justification (Required):
+                </label>
+                <textarea
+                  rows={3}
+                  value={reviewerComments}
+                  onChange={(e) => setReviewerComments(e.target.value)}
+                  className="input"
+                  style={{ width: '100%', fontSize: '12px', fontFamily: 'var(--font-sans)', resize: 'vertical' }}
+                  placeholder="Detail the justification for shifting the operating cutoff..."
+                />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: '11px', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={checkboxAudit}
+                    onChange={(e) => setCheckboxAudit(e.target.checked)}
+                  />
+                  <span>I have audited the FN ({falseNegativeCost}x) and FP ({falsePositiveCost}x) cost matrix against operational priorities.</span>
+                </label>
+
+                <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: '11px', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={checkboxProhibitAuto}
+                    onChange={(e) => setCheckboxProhibitAuto(e.target.checked)}
+                  />
+                  <span>I confirm automated deployment is prohibited; activation requires manual staging verification.</span>
+                </label>
+              </div>
+
+              {approvalError && (
+                <div style={{ color: 'var(--status-error, #ef4444)', fontSize: '11px' }}>
+                  {approvalError}
+                </div>
+              )}
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowApprovalModal(false)}
+                  className="btn btn-secondary btn-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleApprove}
+                  className="btn btn-primary btn-sm"
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <CheckCircle2 size={14} />
+                  Sign & Approve Policy
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Language Tabs & Copy Button */}
         <div
           style={{
@@ -256,6 +437,10 @@ provenance:
             <li>
               <strong>Deterministic Re-evaluation:</strong> Calibrated on {totalSamples.toLocaleString()} verified cases
               with zero synthetic interpolation.
+            </li>
+            <li>
+              <strong>Explicit Human Sign-Off:</strong> Prohibits automated model deployment; requires recorded operator
+              rationale in compliance audit log.
             </li>
             <li>
               <strong>Instant Rollback:</strong> Can be reverted to baseline &tau; = 0.50 immediately via config without

@@ -1,10 +1,17 @@
 import type { EvaluationDataset } from './evaluation-ingestion.ts';
+import {
+  type DatasetCapabilityManifest,
+  type CandidateTaskType,
+  computeDatasetCapabilityManifest,
+} from '../domain/capability-contracts.ts';
 
 export type TaskType =
   | 'binary_classification'
   | 'multiclass_classification'
   | 'regression'
   | 'raw_features_no_predictions'
+  | 'unsupervised_profiling'
+  | 'prediction_audit'
   | 'unknown';
 
 export type CapabilityStatus =
@@ -55,6 +62,7 @@ export interface DatasetCapabilities {
     unavailableCount: number;
     unsupportedCount: number;
   };
+  manifest?: DatasetCapabilityManifest;
 }
 
 export interface ColumnSummaryStats {
@@ -89,76 +97,146 @@ export interface DatasetPreview {
   } | null;
   capabilities: DatasetCapabilities;
   validationIssues: string[];
+  manifest?: DatasetCapabilityManifest;
 }
 
 /**
- * Heuristics for auto-detecting likely column mappings
+ * Heuristics for auto-detecting likely column mappings with user-confirmed overrides
  */
 export function inferColumnMapping(
   columns: readonly string[],
-  columnStats?: readonly ColumnSummaryStats[]
+  columnStats?: readonly ColumnSummaryStats[],
+  confirmedMapping?: Partial<InferredColumnMapping>
 ): InferredColumnMapping {
   const statsMap = new Map(columnStats?.map((s) => [s.name, s]) ?? []);
 
-  let targetColumn: string | null = null;
-  let predictionColumn: string | null = null;
-  let probabilityColumn: string | null = null;
-  let idColumn: string | null = null;
-  const sliceColumns: string[] = [];
+  let targetColumn: string | null =
+    confirmedMapping?.targetColumn !== undefined ? confirmedMapping.targetColumn : null;
+  let predictionColumn: string | null =
+    confirmedMapping?.predictionColumn !== undefined ? confirmedMapping.predictionColumn : null;
+  let probabilityColumn: string | null =
+    confirmedMapping?.probabilityColumn !== undefined ? confirmedMapping.probabilityColumn : null;
+  let idColumn: string | null =
+    confirmedMapping?.idColumn !== undefined ? confirmedMapping.idColumn : null;
+  const sliceColumns: string[] =
+    confirmedMapping?.sliceColumns !== undefined ? [...confirmedMapping.sliceColumns] : [];
+
+  const hasUserConfirmedTarget = confirmedMapping?.targetColumn !== undefined;
+  const hasUserConfirmedPred = confirmedMapping?.predictionColumn !== undefined;
+  const hasUserConfirmedProb = confirmedMapping?.probabilityColumn !== undefined;
+  const hasUserConfirmedId = confirmedMapping?.idColumn !== undefined;
 
   // Patterns
-  const targetPatterns = [/^(y_true|actual|target|label|ground_truth|truth|class)$/i, /target/i, /label/i, /actual/i];
-  const predPatterns = [/^(y_pred|predicted|prediction|pred|y_hat|model_output)$/i, /pred/i, /prediction/i];
-  const probPatterns = [/^(y_probability|y_prob|probability|prob|score|pos_score|confidence)$/i, /prob/i, /score/i];
+  const exactTargetPatterns = [/^(y_true|actual|ground_truth|truth)$/i];
+  const candidateTargetNames = [/^(target|label|class)$/i];
+  const predPatterns = [/^(y_pred|predicted|prediction|pred|y_hat|model_output|model_pred|model_prediction)$/i];
+  const probPatterns = [/^(y_probability|y_prob|probability|prob|pos_score|confidence)$/i];
   const idPatterns = [/^(id|record_id|sample_id|patient_id|uuid|index)$/i];
   const slicePatterns = [/^(site|hospital|center|facility|region|country|device|slice|group|gender|sex|age_group|split)$/i];
 
-  for (const pattern of targetPatterns) {
-    const match = columns.find((c) => pattern.test(c));
-    if (match) {
-      targetColumn = match;
-      break;
+  // 1. Target Column Detection
+  if (!hasUserConfirmedTarget) {
+    for (const pattern of exactTargetPatterns) {
+      const match = columns.find((c) => pattern.test(c));
+      if (match) {
+        targetColumn = match;
+        break;
+      }
+    }
+
+    // Secondary heuristic: candidate names (target, label, class) verified against data cardinality
+    if (!targetColumn) {
+      for (const pattern of candidateTargetNames) {
+        const match = columns.find((c) => pattern.test(c));
+        if (match) {
+          const stats = statsMap.get(match);
+          if (stats) {
+            // Do not infer target solely because named 'target' if it is unbounded or continuous
+            if (
+              stats.detectedType === 'boolean' ||
+              stats.detectedType === 'categorical' ||
+              (stats.distinctCount >= 1 && stats.distinctCount <= 10)
+            ) {
+              targetColumn = match;
+              break;
+            }
+          } else {
+            targetColumn = match;
+            break;
+          }
+        }
+      }
     }
   }
 
-  for (const pattern of predPatterns) {
-    const match = columns.find((c) => c !== targetColumn && pattern.test(c));
-    if (match) {
-      predictionColumn = match;
-      break;
-    }
-  }
-
-  for (const pattern of probPatterns) {
-    const match = columns.find((c) => c !== targetColumn && c !== predictionColumn && pattern.test(c));
-    if (match) {
-      // If we have stats, verify it's numeric in [0, 1]
-      const stats = statsMap.get(match);
-      if (!stats || (stats.isNumeric && stats.min !== null && stats.min! >= -0.01 && stats.max !== null && stats.max! <= 1.01)) {
-        probabilityColumn = match;
+  // 2. Prediction Column Detection
+  if (!hasUserConfirmedPred) {
+    for (const pattern of predPatterns) {
+      const match = columns.find((c) => c !== targetColumn && pattern.test(c));
+      if (match) {
+        predictionColumn = match;
         break;
       }
     }
   }
 
-  for (const pattern of idPatterns) {
-    const match = columns.find((c) => c !== targetColumn && c !== predictionColumn && c !== probabilityColumn && pattern.test(c));
-    if (match) {
-      idColumn = match;
-      break;
+  // 3. Probability Column Detection
+  // Do not silently interpret arbitrary numeric columns as prediction probabilities
+  if (!hasUserConfirmedProb) {
+    for (const pattern of probPatterns) {
+      const match = columns.find((c) => c !== targetColumn && c !== predictionColumn && pattern.test(c));
+      if (match) {
+        const stats = statsMap.get(match);
+        if (stats) {
+          // Strict verification: numeric and range bounded in [0.0, 1.0]
+          if (
+            stats.isNumeric &&
+            stats.min !== undefined &&
+            stats.min !== null &&
+            stats.min >= -0.001 &&
+            stats.max !== undefined &&
+            stats.max !== null &&
+            stats.max <= 1.001 &&
+            stats.distinctCount > 2
+          ) {
+            probabilityColumn = match;
+            break;
+          }
+        } else if (/^(y_probability|y_prob|probability|prob|confidence|pos_score)$/i.test(match)) {
+          // If no stats available, accept explicit standardized probability column names
+          probabilityColumn = match;
+          break;
+        }
+      }
     }
   }
 
-  for (const col of columns) {
-    if (col === targetColumn || col === predictionColumn || col === probabilityColumn || col === idColumn) {
-      continue;
+  // 4. ID Column Detection
+  if (!hasUserConfirmedId) {
+    for (const pattern of idPatterns) {
+      const match = columns.find(
+        (c) => c !== targetColumn && c !== predictionColumn && c !== probabilityColumn && pattern.test(c)
+      );
+      if (match) {
+        idColumn = match;
+        break;
+      }
     }
-    if (slicePatterns.some((p) => p.test(col))) {
-      sliceColumns.push(col);
-    } else {
-      const stats = statsMap.get(col);
-      if (stats && stats.detectedType === 'categorical' && stats.distinctCount >= 2 && stats.distinctCount <= 20) {
+  }
+
+  // 5. Slice Columns Detection
+  if (confirmedMapping?.sliceColumns === undefined) {
+    for (const col of columns) {
+      if (col === targetColumn || col === predictionColumn || col === probabilityColumn || col === idColumn) {
+        continue;
+      }
+      if (slicePatterns.some((p) => p.test(col))) {
         sliceColumns.push(col);
+      } else {
+        const stats = statsMap.get(col);
+        if (stats && stats.detectedType === 'categorical' && stats.distinctCount >= 2 && stats.distinctCount <= 20) {
+          sliceColumns.push(col);
+        }
       }
     }
   }
@@ -179,22 +257,30 @@ export function detectTaskType(
   targetStats: ColumnSummaryStats | undefined,
   predStats: ColumnSummaryStats | undefined
 ): { taskType: TaskType; explanation: string; isSupported: boolean; unsupportedReason?: string } {
+  if (!targetStats && !predStats) {
+    return {
+      taskType: 'unsupervised_profiling',
+      explanation: 'Unsupervised dataset ready for structural distribution, duplicate detection, and data hygiene audits.',
+      isSupported: true,
+    };
+  }
+
   if (!targetStats) {
     return {
-      taskType: 'unknown',
-      explanation: 'Ground-truth target column is missing or unspecified.',
-      isSupported: false,
-      unsupportedReason: 'A ground-truth target column is required to evaluate model reliability.',
+      taskType: 'prediction_audit',
+      explanation: 'Prediction-only dataset ready for inference confidence and output calibration audits.',
+      isSupported: true,
     };
   }
 
   if (!predStats) {
     return {
       taskType: 'raw_features_no_predictions',
-      explanation: 'Dataset contains target labels and features, but no model predictions were mapped.',
+      explanation:
+        'Dataset contains ground-truth targets and features, but no model predictions were found. Supervised model evaluation requires prediction columns (y_pred, prediction).',
       isSupported: false,
       unsupportedReason:
-        'WhyLab investigates model reliability and requires model predictions (y_pred or probability scores) alongside ground-truth labels. WhyLab does not silently train models.',
+        'The current investigation engine is designed for binary classification evaluation. Model predictions (y_pred) are required to compute metrics and run automated investigation.',
     };
   }
 
@@ -242,10 +328,24 @@ export function detectTaskType(
  * Evaluates available capabilities based on column stats and mapping
  */
 export function evaluateCapabilities(
-  columns: readonly ColumnSummaryStats[],
+  columns: readonly (ColumnSummaryStats | string)[],
   mapping: InferredColumnMapping
 ): DatasetCapabilities {
-  const statsMap = new Map(columns.map((c) => [c.name, c]));
+  const normalizedColumns: ColumnSummaryStats[] = columns.map((c: any) =>
+    typeof c === 'string'
+      ? {
+          name: c,
+          detectedType: 'categorical',
+          sampleValues: [],
+          distinctCount: 0,
+          missingCount: 0,
+          isNumeric: false,
+          min: null,
+          max: null,
+        }
+      : c
+  );
+  const statsMap = new Map(normalizedColumns.map((c) => [c.name, c]));
   const targetStats = mapping.targetColumn ? statsMap.get(mapping.targetColumn) : undefined;
   const predStats = mapping.predictionColumn ? statsMap.get(mapping.predictionColumn) : undefined;
   const probStats = mapping.probabilityColumn ? statsMap.get(mapping.probabilityColumn) : undefined;
@@ -253,8 +353,8 @@ export function evaluateCapabilities(
   const taskDetection = detectTaskType(targetStats, predStats);
   const isBinary = taskDetection.taskType === 'binary_classification';
   const hasProb = Boolean(probStats && probStats.isNumeric);
-  const hasSlices = mapping.sliceColumns.length > 0;
-  const featureColumns = columns.filter(
+  const hasSlices = (mapping.sliceColumns?.length ?? 0) > 0;
+  const featureColumns = normalizedColumns.filter(
     (c) =>
       c.name !== mapping.targetColumn &&
       c.name !== mapping.predictionColumn &&
@@ -268,11 +368,22 @@ export function evaluateCapabilities(
       id: 'binary_metrics',
       title: 'Classification Core Metrics (Accuracy, Precision, Recall, F1)',
       category: 'metrics',
-      status: isBinary && mapping.targetColumn && mapping.predictionColumn ? 'available' : 'unsupported',
+      status:
+        isBinary && mapping.targetColumn && mapping.predictionColumn
+          ? 'available'
+          : mapping.targetColumn && !mapping.predictionColumn
+          ? 'missing_evidence'
+          : 'unsupported',
       reason:
         isBinary && mapping.targetColumn && mapping.predictionColumn
           ? 'Ground-truth and model prediction columns are mapped.'
+          : mapping.targetColumn && !mapping.predictionColumn
+          ? 'Ground-truth target mapped, but model predictions are absent. Core classification metrics require model predictions.'
           : taskDetection.unsupportedReason ?? 'Requires binary target and prediction columns.',
+      howToEnable:
+        mapping.targetColumn && !mapping.predictionColumn
+          ? 'Map a model prediction column (y_pred, prediction) or upload model inference outputs.'
+          : undefined,
       requiredColumns: [mapping.targetColumn ?? 'y_true', mapping.predictionColumn ?? 'y_pred'],
     },
     {
@@ -337,25 +448,45 @@ export function evaluateCapabilities(
       id: 'feature_leakage',
       title: 'Feature Leakage & Proxy Target Audit',
       category: 'leakage',
-      status: isBinary && hasFeatures ? 'available' : 'unavailable',
+      status: mapping.targetColumn && hasFeatures ? 'available' : 'unavailable',
       reason:
-        isBinary && hasFeatures
-          ? `${featureColumns.length} input feature column(s) available for correlation and proxy leakage scanning.`
-          : 'Dataset only contains labels and predictions without input features.',
-      howToEnable: 'Include model input features in the CSV to test for proxy leakage or target correlation anomalies.',
+        mapping.targetColumn && hasFeatures
+          ? `${featureColumns.length} input feature column(s) available for correlation and proxy leakage scanning against ${mapping.targetColumn}.`
+          : 'Dataset requires both a target column and input features for correlation scanning.',
+      howToEnable: 'Include model input features and a target column in the CSV to test for proxy leakage or target correlation anomalies.',
       requiredColumns: featureColumns.map((f) => f.name),
     },
     {
       id: 'distribution_drift',
       title: 'Distribution Shift & Drift Detection (KS / PSI / Wasserstein)',
       category: 'drift',
-      status: isBinary && hasSlices ? 'available' : 'unavailable',
+      status: hasSlices && hasFeatures ? 'available' : 'unavailable',
       reason:
-        isBinary && hasSlices
+        hasSlices && hasFeatures
           ? `Can evaluate distribution shift across subgroup partitions: ${mapping.sliceColumns.join(', ')}.`
-          : 'Requires a partitioning column (e.g., site, split, environment) or a reference baseline to compare distributions.',
-      howToEnable: 'Include a partition column (e.g., site, batch, environment) or provide a reference dataset.',
+          : 'Requires a partitioning column (e.g., site, split, environment) and features to compare distributions.',
+      howToEnable: 'Include a partition column (e.g., site, batch, environment) and features or provide a reference dataset.',
       requiredColumns: mapping.sliceColumns,
+    },
+    {
+      id: 'data_quality',
+      title: 'Data Quality & Hygiene Audit (Missingness, Cardinality, Bounds)',
+      category: 'quality',
+      status: 'available',
+      reason: `${normalizedColumns.length} columns available for structural profiling, missing value audits, and candidate key analysis.`,
+      requiredColumns: normalizedColumns.map((c) => c.name),
+    },
+    {
+      id: 'regression_metrics',
+      title: 'Continuous Regression Metrics (MAE, MSE, RMSE, R²)',
+      category: 'metrics',
+      status: taskDetection.taskType === 'regression' && mapping.targetColumn && mapping.predictionColumn ? 'available' : 'unavailable',
+      reason:
+        taskDetection.taskType === 'regression' && mapping.targetColumn && mapping.predictionColumn
+          ? 'Continuous target and prediction columns available for error evaluation.'
+          : 'Requires continuous numeric target and prediction columns.',
+      howToEnable: 'Map continuous numeric target and prediction columns.',
+      requiredColumns: [mapping.targetColumn ?? 'y_true', mapping.predictionColumn ?? 'y_pred'],
     },
     {
       id: 'repair_lab',
@@ -375,12 +506,44 @@ export function evaluateCapabilities(
   const unavailableCount = items.filter((i) => i.status === 'unavailable').length;
   const unsupportedCount = items.filter((i) => i.status === 'unsupported').length;
 
+  const candidateTask: CandidateTaskType =
+    mapping.targetColumn && mapping.predictionColumn
+      ? isBinary
+        ? 'binary_classification'
+        : 'multiclass_classification'
+      : mapping.targetColumn
+      ? isBinary
+        ? 'binary_classification'
+        : 'multiclass_classification'
+      : mapping.predictionColumn
+      ? 'prediction_audit'
+      : 'unsupervised_profiling';
+
+  const manifest = computeDatasetCapabilityManifest({
+    modality: 'tabular',
+    task: candidateTask,
+    rowCount: normalizedColumns.length > 0 ? Math.max(...normalizedColumns.map((c) => c.distinctCount + c.missingCount)) : 100,
+    columns: normalizedColumns.map((c) => c.name),
+    roles: {
+      targetColumn: mapping.targetColumn,
+      predictionColumn: mapping.predictionColumn,
+      probabilityColumn: mapping.probabilityColumn,
+      idColumn: mapping.idColumn,
+      timestampColumn: normalizedColumns.find((c) => c.detectedType === 'timestamp')?.name ?? null,
+      sliceColumns: [...(mapping.sliceColumns ?? [])],
+      featureColumns: featureColumns.map((c) => c.name),
+    },
+    hasValidProbabilities: hasProb,
+    isBinaryLabels: isBinary,
+  });
+
   return {
     taskType: taskDetection.taskType,
     taskTypeExplanation: taskDetection.explanation,
     isSupportedForInvestigation: taskDetection.isSupported,
     unsupportedReason: taskDetection.unsupportedReason,
     items,
+    manifest,
     summary: {
       total: items.length,
       availableCount,
@@ -435,9 +598,9 @@ export function inferBinaryLabels(sampleValues: readonly string[]): {
  */
 export function getCapabilitiesFromDataset(dataset: EvaluationDataset): DatasetCapabilities {
   const cols = dataset.metadata.columns;
-  const targetCol = dataset.metadata.targetColumn ?? 'y_true';
-  const predCol = dataset.metadata.predictionColumn ?? 'y_pred';
-  const probCol = dataset.metadata.probabilityColumn;
+  const targetCol = dataset.metadata.targetColumn ?? null;
+  const predCol = dataset.metadata.predictionColumn ?? null;
+  const probCol = dataset.metadata.probabilityColumn ?? null;
 
   const sliceCols = cols.filter(
     (c) => c !== targetCol && c !== predCol && c !== probCol && c !== 'timestamp' && c !== 'id'
@@ -450,7 +613,7 @@ export function getCapabilitiesFromDataset(dataset: EvaluationDataset): DatasetC
     const values = dataset.rows.map((r) =>
       isTarget ? r.actual : isPred ? r.predicted : isProb ? (r.positiveProbability !== null ? String(r.positiveProbability) : '') : r.attributes[name] ?? ''
     );
-    const nonMissing = values.filter((v) => v !== '' && v !== null);
+    const nonMissing = values.filter((v): v is string => v !== '' && v !== null);
     const distinct = new Set(nonMissing).size;
     const isNum = isProb || (!isTarget && !isPred && nonMissing.length > 0 && nonMissing.every((v) => !isNaN(Number(v))));
 
@@ -469,7 +632,7 @@ export function getCapabilitiesFromDataset(dataset: EvaluationDataset): DatasetC
   const mapping: InferredColumnMapping = {
     targetColumn: targetCol,
     predictionColumn: predCol,
-    probabilityColumn: probCol ?? null,
+    probabilityColumn: probCol,
     sliceColumns: sliceCols,
     idColumn: null,
   };

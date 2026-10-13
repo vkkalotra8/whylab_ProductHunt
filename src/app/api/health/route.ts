@@ -1,6 +1,10 @@
+import { getAIProviderReadiness } from '@/server/orchestrator/ai-config';
+
 export const runtime = 'nodejs';
 
 export async function GET() {
+  const readiness = getAIProviderReadiness();
+
   return Response.json(
     {
       status: 'healthy',
@@ -21,7 +25,11 @@ export async function GET() {
           'generate_repair_candidate',
           're_evaluate_repair',
         ],
-        aiConfigured: Boolean(process.env.WHYLAB_AI_ENABLED === 'true' && process.env.OPENAI_API_KEY),
+        aiConfigured: readiness.status === 'ready',
+        aiProvider: readiness.activeProvider,
+        aiModel: readiness.activeModel,
+        aiStatus: readiness.status,
+        ...(readiness.actionableError ? { aiError: readiness.actionableError } : {}),
       },
     },
     {

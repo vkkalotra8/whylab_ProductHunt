@@ -2,10 +2,132 @@ import type { InvestigatorProvider, ProviderTurnRequest, ProviderTurnResponse } 
 
 export class OfflineInvestigatorProvider implements InvestigatorProvider {
   readonly name = 'offline_deterministic_investigator';
+  readonly model = 'deterministic-flagship';
 
   async nextStep(request: ProviderTurnRequest): Promise<ProviderTurnResponse> {
     const { investigation, dataset, userDirectives } = request;
 
+    const hasPredictions = Boolean(dataset.metadata.predictionColumn);
+
+    // ── Dataset-Only Intelligence Investigation (No Model Predictions) ──
+    if (!hasPredictions) {
+      // 1. Check if profile_dataset has run
+      const hasProfile = investigation.toolResults.some(
+        (r) => r.tool === 'profile_dataset' && r.status === 'completed'
+      );
+      if (!hasProfile) {
+        return {
+          action: 'call_tool',
+          tool: 'profile_dataset',
+          input: {
+            datasetId: dataset.metadata.id,
+            targetColumn: dataset.metadata.targetColumn,
+          },
+          rationale: 'Profile structural distributions, missingness rates, and feature cardinalities for dataset intelligence.',
+        };
+      }
+
+      // Check user directives
+      const latestDirective = userDirectives[userDirectives.length - 1]?.toLowerCase() ?? '';
+
+      // Directive: Leakage screening requested
+      if (
+        (latestDirective.includes('leakage') || latestDirective.includes('proxy') || latestDirective.includes('association')) &&
+        dataset.metadata.targetColumn &&
+        !investigation.toolResults.some((r) => r.tool === 'scan_feature_leakage')
+      ) {
+        const featureCols = dataset.metadata.columns.filter(
+          (c) =>
+            c !== dataset.metadata.targetColumn &&
+            c !== dataset.metadata.predictionColumn &&
+            c !== dataset.metadata.probabilityColumn &&
+            c !== 'id' &&
+            c !== 'timestamp'
+        );
+        if (featureCols.length > 0) {
+          return {
+            action: 'call_tool',
+            tool: 'scan_feature_leakage',
+            input: {
+              datasetId: dataset.metadata.id,
+              targetColumn: dataset.metadata.targetColumn,
+              featureColumns: featureCols,
+              predictionTimeColumn: null,
+              outcomeTimeColumn: null,
+              assumptionEvidenceIds: [],
+            },
+            rationale: 'Steering directive: Screen candidate features against confirmed target for proxy correlation.',
+          };
+        }
+      }
+
+      // 2. If no hypothesis proposed yet
+      if (investigation.hypotheses.length === 0) {
+        if (dataset.metadata.targetColumn) {
+          return {
+            action: 'propose_hypothesis',
+            statement: `Feature Association & Class Imbalance Risk: Dataset contains labeled target "${dataset.metadata.targetColumn}" without model predictions. Features must be screened for proxy target leakage and class distribution stability.`,
+            confidenceLevel: 'moderate',
+            confidenceRationale: `Observed labeled dataset without model predictions. Features and class prevalence warrant statistical audit prior to modeling.`,
+          };
+        } else {
+          return {
+            action: 'propose_hypothesis',
+            statement: 'Unsupervised Data Health & Missingness: Tabular features may exhibit elevated sparsity, constant features, or duplicate records.',
+            confidenceLevel: 'moderate',
+            confidenceRationale: 'Unlabeled tabular dataset profiled for baseline data hygiene.',
+          };
+        }
+      }
+
+      // 3. If target present and leakage hasn't run yet
+      if (dataset.metadata.targetColumn && !investigation.toolResults.some((r) => r.tool === 'scan_feature_leakage')) {
+        const featureCols = dataset.metadata.columns.filter(
+          (c) =>
+            c !== dataset.metadata.targetColumn &&
+            c !== dataset.metadata.predictionColumn &&
+            c !== dataset.metadata.probabilityColumn &&
+            c !== 'id' &&
+            c !== 'timestamp'
+        );
+        if (featureCols.length > 0) {
+          return {
+            action: 'call_tool',
+            tool: 'scan_feature_leakage',
+            input: {
+              datasetId: dataset.metadata.id,
+              targetColumn: dataset.metadata.targetColumn,
+              featureColumns: featureCols,
+              predictionTimeColumn: null,
+              outcomeTimeColumn: null,
+              assumptionEvidenceIds: [],
+            },
+            rationale: `Screen candidate input features against target "${dataset.metadata.targetColumn}" for proxy leakage.`,
+          };
+        }
+      }
+
+      // 4. Conclude investigation
+      const primaryHyp = investigation.hypotheses[0];
+      return {
+        action: 'conclude',
+        rootCause: dataset.metadata.targetColumn
+          ? `Dataset Intelligence Completed: Evaluated structural profile, class distributions, and feature association signals on ${dataset.metadata.name}.`
+          : `Unsupervised Data Profiling Completed: Mapped ${dataset.rows.length} records across ${dataset.metadata.columns.length} columns on ${dataset.metadata.name}.`,
+        summary: dataset.metadata.targetColumn
+          ? `Dataset profiling and quality audit complete. Ground-truth target "${dataset.metadata.targetColumn}" is mapped with ${dataset.rows.length} records. Model predictions (y_pred) were not provided; classification error analysis and threshold repair are deferred until prediction outputs are uploaded.`
+          : `Structural profiling complete across all input attributes. Zero model predictions or target labels mapped.`,
+        primaryHypothesisId: primaryHyp?.id,
+        confidenceLevel: 'moderate',
+        confidenceRationale: 'Dataset intelligence derived strictly from observed empirical column distributions without model outputs.',
+        limitations: [
+          'Model predictions (y_pred) were absent; model performance metrics and threshold repair policies were not generated.',
+          'Statistical correlations identify observational signals, not confirmed causality or independent leakage confirmation.',
+        ],
+      };
+    }
+
+    // ── Supervised Model Reliability Investigation (Predictions Present) ──
     // Check for baseline metrics
     const hasBaselineMetrics = investigation.evidence.some(
       (e) =>

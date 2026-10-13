@@ -138,6 +138,22 @@ export default function CapabilityChecklist({ capabilities }: CapabilityChecklis
               ? 'This dataset contains labels but no model predictions. WhyLab can profile the dataset and inspect data quality. Upload prediction outputs to enable model performance evaluation.'
               : capabilities.taskTypeExplanation}
           </div>
+          {capabilities.manifest && (
+            <div style={{ display: 'flex', gap: '6px', marginTop: '6px', flexWrap: 'wrap' }}>
+              <span className="badge badge-neutral" style={{ fontSize: '11px', textTransform: 'uppercase' }}>
+                Modality: {capabilities.manifest.modality}
+              </span>
+              <span className="badge badge-neutral" style={{ fontSize: '11px', textTransform: 'uppercase' }}>
+                Format: {capabilities.manifest.format}
+              </span>
+              <span className="badge badge-neutral" style={{ fontSize: '11px', textTransform: 'uppercase' }}>
+                Purpose: {capabilities.manifest.purpose.replace(/_/g, ' ')}
+              </span>
+              <span className="badge badge-neutral" style={{ fontSize: '11px' }}>
+                {capabilities.manifest.rowCount.toLocaleString()} rows · {capabilities.manifest.columnCount} columns
+              </span>
+            </div>
+          )}
         </div>
 
         <div style={{ textAlign: 'right' }}>

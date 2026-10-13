@@ -94,7 +94,12 @@ export function evaluateSlices(
 
     for (const value of [...groups.keys()].sort()) {
       const rows = groups.get(value)!;
-      const report = computeClassificationMetrics({ labels: data.labels, rows });
+      const mappedRows = rows.map((r) => ({
+        actual: r.actual ?? '',
+        predicted: r.predicted ?? '',
+        positiveProbability: r.positiveProbability,
+      }));
+      const report = computeClassificationMetrics({ labels: data.labels, rows: mappedRows });
       const deltas: Measurement[] = report.output.metrics.map((metric) => {
         const reference = overallMetrics.get(metric.name)!;
         const base = {
